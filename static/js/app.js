@@ -563,7 +563,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const termos = compararInput.value.trim();
         if (!termos) return;
 
-        compararResultados.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-warning mb-2"></div><p>Comparando preços...</p></div>';
+        compararResultados.innerHTML = '<div class="row g-3"><div class="text-center py-4"><div class="spinner-border text-warning mb-2"></div><p>Comparando preços...</p></div></div>';
 
         const dados = await fetchJSON(`${API_BASE}/comparar?termos=${encodeURIComponent(termos)}`);
 
@@ -572,7 +572,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        compararResultados.innerHTML = dados.comparacao.map(c => {
+        compararResultados.innerHTML = '<div class="row g-3">' + dados.comparacao.map(c => {
             if (c.erro) {
                 return `<div class="col-md-4"><div class="compare-card"><div class="compare-header">${escapeHtml(c.termo)}</div><p class="text-danger">${escapeHtml(c.erro)}</p></div></div>`;
             }
@@ -581,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cores = { 'Americanas': 'primary', 'KaBuM': 'danger', 'Samsung': 'info', 'Mercado Livre': 'warning', 'Buscapé': 'success', 'Zoom': 'warning', 'Google Shopping': 'secondary', 'Google': 'light' };
                 const cor = cores[f] || 'secondary';
                 return `<span class="badge bg-${cor} bg-opacity-25 text-${cor} border border-${cor} border-opacity-50 me-1" style="font-size: 0.65rem;">${escapeHtml(f)}</span>`;
-            }).join('');
+        }).join('') + '</div>';
 
             const nomeTop = c.top_resultado && c.top_resultado.nome
                 ? (c.top_resultado.nome.length > 50 ? c.top_resultado.nome.substring(0, 50) + '...' : c.top_resultado.nome)

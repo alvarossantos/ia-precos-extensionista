@@ -189,17 +189,24 @@ select.form-select:focus {
     border: 1px solid var(--card-border);
     border-radius: 0.75rem;
     padding: 1.25rem;
+    overflow: hidden;
+    word-break: break-word;
+    height: 100%;
 }
 
 .compare-card .compare-header {
     font-weight: 600;
     font-size: 1rem;
     margin-bottom: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .compare-card .compare-price {
     font-size: 1.5rem;
     font-weight: 700;
+    white-space: nowrap;
 }
 
 /* Alert Card */
@@ -277,6 +284,29 @@ select.form-select:focus {
     .compare-card .compare-price {
         font-size: 1.2rem;
     }
+
+    .compare-card {
+        padding: 1rem;
+    }
+}
+
+/* Compare Card - conteúdo não escapa */
+.compare-card .badge {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.compare-card small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.compare-card .d-flex {
+    flex-wrap: wrap;
+    gap: 0.25rem;
 }
 
 /* ==================== MELHORIAS DE RESPONSIVIDADE E DESIGN ==================== */

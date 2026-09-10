@@ -1,0 +1,354 @@
+:root {
+    --bg-main: #0f172a;
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --primary-color: #3b82f6;
+    --primary-glow: rgba(59, 130, 246, 0.5);
+    --success-color: #10b981;
+    --success-glow: rgba(16, 185, 129, 0.3);
+    --danger-color: #ef4444;
+    --danger-glow: rgba(239, 68, 68, 0.3);
+    --warning-color: #f59e0b;
+    --warning-glow: rgba(245, 158, 11, 0.3);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    background-image:
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(239, 68, 68, 0.1) 0px, transparent 50%);
+    background-attachment: fixed;
+}
+
+/* Glassmorphism */
+.glass-nav {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--card-border);
+}
+
+.glass-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--card-border);
+    border-radius: 1rem;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Text Gradients */
+.gradient-text {
+    background: linear-gradient(90deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.gradient-text-up {
+    background: linear-gradient(90deg, #34d399, #10b981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.gradient-text-down {
+    background: linear-gradient(90deg, #f87171, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.gradient-text-stable {
+    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Prediction Glow */
+.prediction-bg-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200px;
+    height: 200px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0;
+    transition: opacity 1s ease, background-color 1s ease;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.prediction-bg-glow.up { opacity: 1; background-color: var(--success-glow); }
+.prediction-bg-glow.down { opacity: 1; background-color: var(--danger-glow); }
+.prediction-bg-glow.stable { opacity: 1; background-color: var(--warning-glow); }
+.prediction-bg-glow.loading { opacity: 1; background-color: var(--primary-glow); animation: pulse 2s infinite ease-in-out; }
+
+@keyframes pulse {
+    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+    50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+    100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+}
+
+/* Tabs */
+.nav-pills .nav-link {
+    color: var(--text-muted);
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.nav-pills .nav-link:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-pills .nav-link.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Custom Select */
+select.form-select {
+    cursor: pointer;
+    background-color: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid var(--card-border) !important;
+    color: var(--text-main) !important;
+}
+
+select.form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25) !important;
+    border-color: var(--primary-color) !important;
+}
+
+/* Chart */
+.chart-container canvas {
+    border-radius: 0.5rem;
+}
+
+/* Product Card */
+.product-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.product-card:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+}
+
+.product-card .product-thumb {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.25rem;
+}
+
+.product-card .product-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--success-color);
+}
+
+.product-card .product-original-price {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-decoration: line-through;
+}
+
+.product-card .badge-frete {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success-color);
+    font-size: 0.7rem;
+}
+
+/* Compare Card */
+.compare-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+}
+
+.compare-card .compare-header {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.compare-card .compare-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Alert Card */
+.alerta-card {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid var(--card-border);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.alerta-card.ativado {
+    border-color: var(--success-color);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.alerta-card .alerta-produto {
+    font-weight: 500;
+}
+
+.alerta-card .alerta-preco {
+    font-weight: 700;
+    color: var(--warning-color);
+}
+
+/* History Item */
+.historico-item {
+    background: rgba(30, 41, 59, 0.4);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.historico-item:hover {
+    background: rgba(30, 41, 59, 0.7);
+}
+
+/* Search Loading */
+.search-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: var(--text-muted);
+}
+
+/* Discount Badge */
+.discount-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: var(--danger-color);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .product-card .product-thumb {
+        width: 60px;
+        height: 60px;
+    }
+
+    .compare-card .compare-price {
+        font-size: 1.2rem;
+    }
+}
+
+/* ==================== MELHORIAS DE RESPONSIVIDADE E DESIGN ==================== */
+
+/* Evita overflow horizontal em qualquer tela */
+html, body {
+    overflow-x: hidden;
+}
+
+/* Navbar: ícones e texto alinham bem em mobile */
+.nav-pills {
+    gap: 0.25rem;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.nav-pills::-webkit-scrollbar { display: none; }
+.nav-pills .nav-link {
+    white-space: nowrap;
+}
+
+/* Cards com melhor hierarquia de padding em telas médias */
+@media (max-width: 576px) {
+    .glass-card { border-radius: 0.75rem; }
+    .glass-card.p-4 { padding: 1rem !important; }
+
+    /* Preço principal do dashboard escala em telas pequenas */
+    #currentPrice { font-size: 2.5rem; }
+
+    /* Ajusta a coluna da navbar: botões de tema/ativo não quebram linha */
+    .navbar .container {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    /* Formulários em pilha para melhor UX mobile */
+    .input-group { flex-wrap: wrap; }
+    .input-group > .form-select { max-width: 100% !important; width: 100% !important; }
+    .input-group > .btn { width: 100%; margin-top: 0.5rem; }
+
+    /* Cards de produto em 1 coluna com mais espaço */
+    .product-card .product-thumb { width: 56px; height: 56px; }
+    .product-card { padding: 0.75rem; }
+    .product-card .product-price { font-size: 1.1rem; }
+}
+
+/* Altura mínima do gráfico em telas altas para não esmagar */
+@media (min-width: 992px) {
+    .chart-container { height: 420px; }
+}
+
+/* Foco acessível e consistente */
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Badge de switch "Só novos" mais legível */
+.form-check-input:checked {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+}
+
+/* Card de análise IA com leve destaque */
+#pvAnaliseIa {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(59, 130, 246, 0.08));
+}
+
+/* Botão de análise IA com animação sutil ao hover */
+#analiseIaBtn:hover {
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}

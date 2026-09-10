@@ -15,7 +15,7 @@ import threading
 from datetime import datetime
 
 from . import fontes
-from .filtros import eh_acessorio, filtrar_novos, filtrar_por_ia, filtrar_relevancia, preco_minimo_produto
+from .filtros import eh_acessorio, filtrar_novos, filtrar_por_ia, filtrar_relevancia, preco_minimo_produto, validar_urls
 from .ranking import ranking_relevancia
 
 logger = logging.getLogger(__name__)
@@ -97,29 +97,31 @@ def buscar_produtos(produto: str, limite: int = 5, fontes_selecionadas: list = N
 def buscar_ofertas(produto: str, limite: int = 5, fontes_selecionadas: list = None,
                     so_novos: bool = False) -> list:
     """Pipeline padrão: agrega fontes → filtra por relevância textual →
-    (opcional) remove usados → ordena por relevância + preço.
-
-    Usado por /api/buscar, /api/comparar, /api/analise-ia e pela
-    verificação de alertas.
+    remove usados → valida URLs → ordena por relevância + preço.
     """
     resultados = buscar_produtos(produto, limite=max(limite, 10), fontes_selecionadas=fontes_selecionadas)
     resultados = filtrar_relevancia(resultados, produto)
     if so_novos:
         resultados = filtrar_novos(resultados, produto)
+    resultados = validar_urls(resultados)
     return ranking_relevancia(resultados, produto, limite=limite)
 
 
 def _pipeline_pesado(produto: str, busca_limite: int, ranking_limite: int) -> list:
     """Pipeline "pesado" do dashboard: além da relevância textual,
     remove acessórios/jogos por heurística, aplica piso de preço por
-    categoria e faz uma passada final de filtro por IA."""
+    categoria, valida URLs e faz uma passada final de filtro por IA."""
     resultados = buscar_produtos(produto, limite=busca_limite)
     resultados = filtrar_relevancia(resultados, produto)
+    resultados = filtrar_novos(resultados, produto)
     resultados = [r for r in resultados if not eh_acessorio(r.get("nome", ""))]
 
     minimo = preco_minimo_produto(produto)
     if minimo:
         resultados = [r for r in resultados if r.get("preco") is None or r["preco"] >= minimo]
+
+    # Valida URLs (remove páginas com 502/conteúdo vazio)
+    resultados = validar_urls(resultados)
 
     resultados = filtrar_por_ia(resultados, produto)
     return ranking_relevancia(resultados, produto, limite=ranking_limite)

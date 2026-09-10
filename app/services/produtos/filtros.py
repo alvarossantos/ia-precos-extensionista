@@ -159,3 +159,57 @@ def filtrar_por_ia(resultados: list, produto: str) -> list:
 
     filtrados = [r for i, r in enumerate(resultados) if i in indices]
     return filtrados if filtrados else resultados
+
+
+# ==================== Validação de URLs ====================
+
+import concurrent.futures
+from ... import http_client
+
+
+def _url_tem_conteudo(url: str) -> bool:
+    """Verifica se uma URL retorna conteúdo real (HTTP 200 com tamanho aceitável).
+
+    Faz um HEAD first (rápido); se não suportar, faz GET parcial.
+    Retorna False se: timeout, status >= 400, ou página muito pequena (< 5KB)
+    o que geralmente indica página de erro ou redirect quebrado.
+    """
+    if not url or not url.startswith("http"):
+        return False
+    try:
+        resp = http_client.get(url, timeout=8, stream=True, allow_redirects=True)
+        if resp.status_code >= 400:
+            return False
+        # Lê apenas os primeiros 10KB para verificar se tem conteúdo real
+        chunk = next(resp.iter_content(chunk_size=10240), b"")
+        resp.close()
+        # Páginas de erro/blank geralmente têm < 5KB
+        return len(chunk) >= 5120
+    except Exception:
+        return False
+
+
+def validar_urls(resultados: list, max_workers: int = 5) -> list:
+    """Valida URLs dos resultados em paralelo.
+
+    Remove itens cuja URL retorna 502/404/página vazia.
+    Mantém itens sem permalink (ex: Google orgânico sem link direto).
+    Fail-open: se a validação falhar, mantém o item.
+    """
+    if not resultados:
+        return resultados
+
+    def _check(r):
+        permalink = r.get("permalink", "")
+        if not permalink:
+            return r  # sem link, mantém
+        if _url_tem_conteudo(permalink):
+            return r
+        logger.warning("URL inválida removida: %s (%s)", permalink[:60], r.get("nome", "")[:30])
+        return None
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        resultados_validados = list(executor.map(_check, resultados))
+
+    filtrados = [r for r in resultados_validados if r is not None]
+    return filtrados if filtrados else resultados  # fail-open

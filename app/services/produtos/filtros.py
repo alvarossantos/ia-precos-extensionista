@@ -168,25 +168,23 @@ from ... import http_client
 
 
 def _url_tem_conteudo(url: str) -> bool:
-    """Verifica se uma URL retorna conteúdo real (HTTP 200 com tamanho aceitável).
+    """Verifica se uma URL não é claramente quebrada (404, timeout, connection error).
 
-    Faz um HEAD first (rápido); se não suportar, faz GET parcial.
-    Retorna False se: timeout, status >= 400, ou página muito pequena (< 5KB)
-    o que geralmente indica página de erro ou redirect quebrado.
+    NÃO remove URLs que retornam 200 com conteúdo pequeno — alguns sites
+    (Americanas, ML, iPlace) retornam páginas leves mas funcionais no navegador.
+    Só remove se: status 404/410, timeout, ou connection error.
     """
     if not url or not url.startswith("http"):
         return False
     try:
-        resp = http_client.get(url, timeout=8, stream=True, allow_redirects=True)
-        if resp.status_code >= 400:
+        resp = http_client.get(url, timeout=10, allow_redirects=True)
+        # Só rejeita 404/410 (página não encontrada) — outros 4xx/5xx podem ser anti-bot
+        if resp.status_code in (404, 410):
             return False
-        # Lê apenas os primeiros 10KB para verificar se tem conteúdo real
-        chunk = next(resp.iter_content(chunk_size=10240), b"")
-        resp.close()
-        # Páginas de erro/blank geralmente têm < 5KB
-        return len(chunk) >= 5120
+        return True
     except Exception:
-        return False
+        # Timeout ou connection error → mantém (pode ser anti-bot)
+        return True
 
 
 def validar_urls(resultados: list, max_workers: int = 5) -> list:

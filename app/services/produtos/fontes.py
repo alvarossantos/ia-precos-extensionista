@@ -182,6 +182,11 @@ def _parse_mosaico_hits(html: str, base_url: str, limite: int, fonte: str):
             continue
 
         url = item.get("url", "")
+
+        # Pula anúncios promovidos — Buscapé/Zoom usam /lead?oid= para ads
+        if not url or url.startswith("/lead"):
+            continue
+
         permalink = url if url.startswith("http") else f"{base_url}{url}"
         permalink = permalink.split("?")[0]
 

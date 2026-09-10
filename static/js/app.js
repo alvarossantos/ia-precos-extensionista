@@ -349,7 +349,18 @@ document.addEventListener('DOMContentLoaded', () => {
             priceChangeEl.className = `text-muted mt-2 fw-medium mb-0 ${isPositive ? 'text-success' : 'text-danger'}`;
 
             if (modoAtual === 'comum') {
-                infoText.textContent = `Histórico do ML — ${dadosHistorico.pontos_coletados} ponto(s). A série cresce a cada busca.`;
+                const pontos = dadosHistorico.pontos_coletados;
+                const est = dadosHistorico.estatisticas || {};
+                let info = `${pontos} ponto(s) no histórico`;
+                if (est.menor_preco && est.maior_preco) {
+                    const faixa = est.maior_preco - est.menor_preco;
+                    const diffPct = est.menor_preco > 0 ? ((faixa / est.menor_preco) * 100).toFixed(1) : 0;
+                    info += ` | Faixa: R$ ${est.menor_preco.toFixed(2)} a R$ ${est.maior_preco.toFixed(2)} (${diffPct}% de variação)`;
+                }
+                if (pontos < 5) {
+                    info += ' | 💡 Consulte novamente mais tarde para ver tendências';
+                }
+                infoText.textContent = info;
             }
 
             renderChart(dadosHistorico.historico, {

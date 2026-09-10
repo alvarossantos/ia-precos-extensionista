@@ -32,9 +32,10 @@ def previsao():
         except requests.RequestException as e:
             logger.warning("Falha ao consultar Binance para '%s': %s", produto, e)
             return jsonify({"erro": f"Falha ao consultar Binance: {e}"}), 502
+        resultados = None
     else:
         try:
-            hist, preco_fresco, _ = obter_dados_produto_comum(
+            hist, preco_fresco, resultados = obter_dados_produto_comum(
                 produto, cache_repo, historico_repo, ttl_horas=config.CACHE_TTL_HORAS, dias=periodo,
             )
         except Exception as e:
@@ -46,4 +47,4 @@ def previsao():
 
         preco_atual = preco_fresco if preco_fresco is not None else hist[-1]["close"]
 
-    return jsonify(previsao_service.gerar_previsao(produto, tipo, hist, preco_atual))
+    return jsonify(previsao_service.gerar_previsao(produto, tipo, hist, preco_atual, resultados))

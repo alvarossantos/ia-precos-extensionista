@@ -16,24 +16,54 @@ _TERMOS_IGNORADOS = {
     "para", "com", "de", "da", "do", "na", "no", "brasil",
 }
 
+# Sinônimos/abreviações: se o usuário busca "ps5", aceitar "playstation 5" etc.
+_SINONIMOS = {
+    "ps5": ["playstation 5", "play station 5", "ps 5"],
+    "ps4": ["playstation 4", "play station 4", "ps 4"],
+    "xbox": ["xbox series", "xbox one"],
+    "iphone": ["iphone"],
+    "galaxy": ["galaxy"],
+    "macbook": ["macbook", "mac book"],
+    "rtx": ["rtx"],
+    "ssd": ["ssd"],
+}
+
+
+def _expandir_termos(termo: str) -> list[str]:
+    """Expande o termo de busca com sinônimos para melhor matching."""
+    termo_norm = normalizar(termo)
+    extras = []
+    for chave, sinos in _SINONIMOS.items():
+        if chave in termo_norm or termo_norm in chave:
+            extras.extend(sinos)
+    return extras
+
 
 def filtrar_relevancia(resultados: list, termo: str, min_palavras: int = 1) -> list:
     """Filtra resultados cujo nome não tem relação com o termo buscado.
 
-    Extrai palavras significativas (>=2 chars, não genéricas) do termo
-    e mantém apenas itens cujo nome contém TODAS elas.
+    Verifica se o nome contém as palavras do termo OU qualquer sinônimo.
+    Fail-open: se nada passar, retorna a lista original.
     """
     palavras = [
         p for p in re.findall(r"[a-z0-9]+", normalizar(termo))
         if len(p) >= 2 and p not in _TERMOS_IGNORADOS
     ]
-    if not palavras:
+    sinos = _expandir_termos(termo)
+    if not palavras and not sinos:
         return resultados
 
-    filtrados = [
-        r for r in resultados
-        if all(p in normalizar(r.get("nome", "")) for p in palavras)
-    ]
+    def _matches(r):
+        nome = normalizar(r.get("nome", ""))
+        # Match por palavras individuais (AND)
+        if palavras and all(p in nome for p in palavras):
+            return True
+        # Match por sinônimo (OR — qualquer sinônimo basta)
+        if sinos and any(s in nome for s in sinos):
+            return True
+        return False
+
+    filtrados = [r for r in resultados if _matches(r)]
     return filtrados if filtrados else resultados
 
 
@@ -172,30 +202,37 @@ def _url_tem_conteudo(url: str) -> bool:
 
     NÃO remove URLs que retornam 200 com conteúdo pequeno — alguns sites
     (Americanas, ML, iPlace) retornam páginas leves mas funcionais no navegador.
-    Só remove se: status 404/410, timeout, ou connection error.
+    Só rejeita se: status 404/410, ou erro de conexão (não timeout).
+    Timeout → mantém (pode ser anti-bot ou site lento).
     """
     if not url or not url.startswith("http"):
         return False
     try:
-        resp = http_client.get(url, timeout=10, allow_redirects=True)
-        # Só rejeita 404/410 (página não encontrada) — outros 4xx/5xx podem ser anti-bot
+        resp = http_client.get(url, timeout=12, allow_redirects=True)
+        # Só rejeita 404/410 (página não encontrada)
         if resp.status_code in (404, 410):
             return False
         return True
     except Exception:
-        # Timeout ou connection error → mantém (pode ser anti-bot)
+        # Qualquer erro (timeout, connection, etc) → mantém (fail-open)
         return True
 
 
-def validar_urls(resultados: list, max_workers: int = 5) -> list:
-    """Valida URLs dos resultados em paralelo.
+def validar_urls(resultados: list, max_workers: int = 5, max_validar: int = 10) -> list:
+    """Valida URLs dos resultados em paralelo (no máximo max_validar).
 
-    Remove itens cuja URL retorna 502/404/página vazia.
-    Mantém itens sem permalink (ex: Google orgânico sem link direto).
-    Fail-open: se a validação falhar, mantém o item.
+    Remove itens cuja URL retorna 404/410.
+    Mantém itens sem permalink, ou se a validação falhar (fail-open).
     """
     if not resultados:
         return resultados
+
+    # Só valida os top N (por preço) — não valida todos para não lentidão
+    com_preco = [r for r in resultados if r.get("preco") is not None]
+    sem_preco = [r for r in resultados if r.get("preco") is None]
+    com_preco.sort(key=lambda x: x["preco"])
+    para_validar = com_preco[:max_validar]
+    nao_validar = com_preco[max_validar:]
 
     def _check(r):
         permalink = r.get("permalink", "")
@@ -207,7 +244,8 @@ def validar_urls(resultados: list, max_workers: int = 5) -> list:
         return None
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        resultados_validados = list(executor.map(_check, resultados))
+        resultados_validados = list(executor.map(_check, para_validar))
 
     filtrados = [r for r in resultados_validados if r is not None]
-    return filtrados if filtrados else resultados  # fail-open
+    # Retorna: validados + não validados (por preço alto) + sem preço
+    return filtrados + nao_validar + sem_preco if (filtrados + nao_validar + sem_preco) else resultados

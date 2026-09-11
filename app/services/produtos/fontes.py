@@ -407,9 +407,12 @@ def buscar_google_organico(produto: str, limite: int = 5):
     for item in dados.get("organic_results", []):
         if not item.get("link"):
             continue
+        preco = extrair_preco_br(item.get("snippet", "") or "")
+        if not preco or preco <= 0:
+            continue  # descarta resultados sem preço (sem valor útil)
         resultados.append({
             "nome": item.get("title", "") or "",
-            "preco": extrair_preco_br(item.get("snippet", "") or ""),
+            "preco": preco,
             "preco_original": None,
             "moeda": "BRL",
             "permalink": item.get("link", ""),

@@ -15,7 +15,7 @@ import threading
 from datetime import datetime
 
 from . import fontes
-from .filtros import eh_acessorio, filtrar_novos, filtrar_por_ia, filtrar_relevancia, preco_minimo_produto, validar_urls
+from .filtros import eh_acessorio, eh_titulo_ingles, filtrar_novos, filtrar_por_ia, filtrar_relevancia, preco_minimo_produto, validar_urls
 from .ranking import ranking_relevancia
 
 logger = logging.getLogger(__name__)
@@ -106,12 +106,14 @@ def buscar_produtos(produto: str, limite: int = 5, fontes_selecionadas: list = N
 def buscar_ofertas(produto: str, limite: int = 5, fontes_selecionadas: list = None,
                     so_novos: bool = False) -> list:
     """Pipeline padrão: agrega fontes (paralelo) → filtra por relevância →
-    remove acessórios/jogos → aplica piso de preço → valida URLs → ordena.
+    remove acessórios/jogos → remove nomes em inglês → aplica piso de preço
+    → valida URLs → ordena.
     Busca 15 por fonte para compensar perdas nos filtros.
     """
     resultados = buscar_produtos(produto, limite=15, fontes_selecionadas=fontes_selecionadas)
     resultados = filtrar_relevancia(resultados, produto)
     resultados = [r for r in resultados if not eh_acessorio(r.get("nome", ""))]
+    resultados = [r for r in resultados if not eh_titulo_ingles(r.get("nome", ""))]
     minimo = preco_minimo_produto(produto)
     if minimo:
         resultados = [r for r in resultados if r.get("preco") is None or r["preco"] >= minimo]
@@ -129,6 +131,9 @@ def _pipeline_pesado(produto: str, busca_limite: int, ranking_limite: int) -> li
     resultados = filtrar_relevancia(resultados, produto)
     resultados = filtrar_novos(resultados, produto)
     resultados = [r for r in resultados if not eh_acessorio(r.get("nome", ""))]
+    # Remove resultados cujo título é exclusivamente em inglês
+    # (Google Shopping retorna nomes em inglês para eletrônicos)
+    resultados = [r for r in resultados if not eh_titulo_ingles(r.get("nome", ""))]
 
     minimo = preco_minimo_produto(produto)
     if minimo:

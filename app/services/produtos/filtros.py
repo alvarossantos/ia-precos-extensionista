@@ -16,6 +16,59 @@ _TERMOS_IGNORADOS = {
     "para", "com", "de", "da", "do", "na", "no", "brasil",
 }
 
+# Palavras comuns em nomes de produtos em português (indica listing BR)
+_PALAVRAS_PT = {
+    "notebook", "computador", "placa", "processador", "memória", "memoria",
+    "armazenamento", "tela", "teclado", "mouse", "impressora", "monitor",
+    "fone", "caixa de som", "speaker", "headphone", "headset",
+    "smart tv", "televisão", "geladeira", "ar condicionado",
+    "aspirador", "liquidificador", "batedeira", "forno", "microondas",
+    "micro-ondas", "air fryer", "fritadeira", "cafeteira", "chaleira",
+    "torradeira", "sanduicheira", "waffleira", "grill", "panela",
+    "máquina de lavar", "maquina de lavar", "secador", "chapinha",
+    "ventoinha", "cooler", "gabinete",
+    "fonte", "placa-mãe", "placa mae", "mousepad", "webcam",
+    "fone de ouvido", "capa", "película", "pelicula",
+    "carregador", "cabo", "suporte", "braço", "mesa", "cadeira",
+    "console", "controle", "joystick", "volante",
+    "robô", "robo",
+}
+
+
+# Sufixos de marketing que o Google Shopping appenda em listings BR
+# Ex: "Asus TUF ... online ao melhor preço no Mercado Livre"
+# O regex remove a partir de "online", "melhor preço", "comprar", etc.
+_SUFIXOS_MARKETING = re.compile(
+    r"\s+(?:online|ao\s+melhor\s+preço|com\s+preço|comprar|confira|aproveite|encontre|veja\s+mais).*$",
+    re.IGNORECASE,
+)
+
+
+def eh_titulo_ingles(nome: str) -> bool:
+    """Heurística: retorna True se o título parece ser exclusivamente em inglês.
+
+    Remove sufixos de marketing brasileiro (ex: "online ao melhor preço")
+    antes de analisar. Verifica caracteres acentuados e palavras-chave de
+    produto BR.
+    """
+    if not nome:
+        return False
+
+    # Remove sufixos de marketing brasileiro que mascaram o título real
+    nome_limpo = _SUFIXOS_MARKETING.sub("", nome).strip()
+    nome_norm = normalizar(nome_limpo)
+
+    # Caracteres acentuados indicam português (no título limpo)
+    if re.search(r"[ãçêíóúâôûáé]", nome_limpo.lower()):
+        return False
+
+    # Palavras-chave de produto BR
+    for palavra in _PALAVRAS_PT:
+        if palavra in nome_norm:
+            return False
+
+    return True
+
 # Sinônimos/abreviações: se o usuário busca "ps5", aceitar "playstation 5" etc.
 _SINONIMOS = {
     "ps5": ["playstation 5", "play station 5", "ps 5"],

@@ -184,6 +184,30 @@ def _extrair_url_loja_direta(item: dict, base_url: str) -> str | None:
     return None
 
 
+def _buscar_url_loja_direta(produto_url: str) -> str | None:
+    """Busca a página do produto e extrai URL direta da loja (Amazon).
+
+    Faz uma requisição à página do produto no Buscapé/Zoom e procura
+    pelo externalReviewsUrl que contém o ASIN da Amazon.
+    Limitado a timeout curto para não lentidão.
+    """
+    try:
+        resp = http_client.get(produto_url, timeout=8)
+        resp.raise_for_status()
+        html = resp.text
+
+        # Procura por externalReviewsUrl com Amazon
+        m = re.search(r'"externalReviewsUrl"\s*:\s*"(https?://[^"]*amazon[^"]*)"', html)
+        if m:
+            ext_url = m.group(1)
+            asin_match = re.search(r"/(B[A-Z0-9]{9})", ext_url)
+            if asin_match:
+                return f"https://www.amazon.com.br/dp/{asin_match.group(1)}"
+    except Exception:
+        pass
+    return None
+
+
 def _parse_mosaico_hits(html: str, base_url: str, limite: int, fonte: str):
     """Parser genérico para Buscapé/Zoom.
 
@@ -241,7 +265,29 @@ def _parse_mosaico_hits(html: str, base_url: str, limite: int, fonte: str):
             "fonte": fonte,
             "loja": loja,
             "frete_gratis": False,
+            "_buscape_url": permalink if not url_loja else None,
         })
+
+    # Para os top 3 sem link direto, tenta buscar na página do produto
+    import concurrent.futures
+    com_detalhe = [r for r in resultados if r.get("_buscape_url")]
+    if com_detalhe:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            futuros = {
+                executor.submit(_buscar_url_loja_direta, r["_buscape_url"]): r
+                for r in com_detalhe[:3]
+            }
+            for futuro in concurrent.futures.as_completed(futuros):
+                r = futuros[futuro]
+                url_direta = futuro.result()
+                if url_direta:
+                    r["permalink_detalhe"] = r["permalink"]
+                    r["permalink"] = url_direta
+                r.pop("_buscape_url", None)
+    # Limpa campo interno dos que não foram processados
+    for r in resultados:
+        r.pop("_buscape_url", None)
+
     return resultados
 
 

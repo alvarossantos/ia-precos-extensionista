@@ -10,6 +10,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 </head>
 <body>
 
@@ -284,47 +285,35 @@
                 </h5>
                 <p class="text-secondary mb-3">Busca os top resultados com comparação de preços e estatísticas.</p>
 
-                <div class="input-group mb-4">
+                <form class="input-group mb-4"
+                      hx-get="/api/hx/buscar"
+                      hx-target="#buscaResultados"
+                      hx-swap="innerHTML"
+                      hx-trigger="submit"
+                      hx-include="#buscaLimite,#buscaAmpliadaInput,#soNovosBusca"
+                      hx-vals="js:{ produto: document.getElementById('buscaAmpliadaInput').value, limite: document.getElementById('buscaLimite').value, fontes: document.getElementById('fontesSelect')?.value || '', so_novos: document.getElementById('soNovosBusca')?.checked ? '1' : '0' }">
                     <input type="text" id="buscaAmpliadaInput" class="form-control bg-dark text-white border-secondary"
-                           placeholder="Digite o nome do produto...">
-                    <select id="buscaLimite" class="form-select bg-dark text-white border-secondary" style="max-width: 120px;">
+                           placeholder="Digite o nome do produto..." name="produto" required>
+                    <select id="buscaLimite" class="form-select bg-dark text-white border-secondary" style="max-width: 120px;" name="limite">
                         <option value="3">Top 3</option>
                         <option value="5">Top 5</option>
                         <option value="10">Top 10</option>
                         <option value="20">Top 20</option>
                         <option value="50" selected>Todos</option>
                     </select>
-                    <button class="btn btn-primary" id="buscaAmpliadaBtn" type="button">
+                    <button class="btn btn-primary" type="submit">
                         <i class="fa-solid fa-magnifying-glass me-1"></i> Buscar
                     </button>
-                </div>
+                </form>
 
                 <!-- Estatísticas -->
-                <div id="buscaStats" class="row g-3 mb-4 d-none">
-                    <div class="col-md-3">
-                        <div class="glass-card p-3 text-center">
-                            <small class="text-secondary d-block">Menor Preço</small>
-                            <span class="fs-4 fw-bold text-success" id="statMenor">--</span>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="glass-card p-3 text-center">
-                            <small class="text-secondary d-block">Maior Preço</small>
-                            <span class="fs-4 fw-bold text-danger" id="statMaior">--</span>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="glass-card p-3 text-center">
-                            <small class="text-secondary d-block">Preço Médio</small>
-                            <span class="fs-4 fw-bold text-primary" id="statMedia">--</span>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="glass-card p-3 text-center">
-                            <small class="text-secondary d-block">Fontes</small>
-                            <span class="fs-6 fw-bold text-warning" id="statFrete">--</span>
-                        </div>
-                    </div>
+                <div id="buscaStats"
+                     hx-get="/api/hx/buscar/stats"
+                     hx-trigger="load"
+                     hx-target="#buscaStats"
+                     hx-swap="innerHTML"
+                     hx-include="#buscaAmpliadaInput,#buscaLimite,#soNovosBusca"
+                     hx-vals="js:{ produto: document.getElementById('buscaAmpliadaInput')?.value || '', limite: document.getElementById('buscaLimite')?.value || '50', fontes: document.getElementById('fontesSelect')?.value || '', so_novos: document.getElementById('soNovosBusca')?.checked ? '1' : '0' }">
                 </div>
 
                 <!-- Resultados -->
@@ -345,13 +334,18 @@
                 </h5>
                 <p class="text-secondary mb-3">Compare preços entre diferentes termos de busca (separados por vírgula).</p>
 
-                <div class="input-group mb-4">
+                <form class="input-group mb-4"
+                      hx-get="/api/hx/comparar"
+                      hx-target="#compararResultados"
+                      hx-swap="innerHTML"
+                      hx-trigger="submit">
                     <input type="text" id="compararInput" class="form-control bg-dark text-white border-secondary"
-                           placeholder="Ex: iPhone 15 128GB, iPhone 15 256GB, Samsung S24">
-                    <button class="btn btn-warning" id="compararBtn" type="button">
+                           placeholder="Ex: iPhone 15 128GB, iPhone 15 256GB, Samsung S24"
+                           name="termos" required>
+                    <button class="btn btn-warning" type="submit">
                         <i class="fa-solid fa-scale-balanced me-1"></i> Comparar
                     </button>
-                </div>
+                </form>
 
                 <div id="compararResultados">
                     <div class="text-center text-secondary py-5">
@@ -373,44 +367,53 @@
                 <!-- Criar Alerta -->
                 <div class="glass-card p-3 mb-4 border border-primary">
                     <h6 class="text-primary mb-3"><i class="fa-solid fa-plus-circle me-1"></i> Novo Alerta</h6>
-                    <div class="row g-3">
-                        <div class="col-md-5">
-                            <input type="text" id="alertaProduto" class="form-control bg-dark text-white border-secondary"
-                                   placeholder="Nome do produto">
-                        </div>
-                        <div class="col-md-3">
-                            <div class="input-group">
-                                <span class="input-group-text bg-dark text-white border-secondary">R$</span>
-                                <input type="number" id="alertaPreco" class="form-control bg-dark text-white border-secondary"
-                                       placeholder="Preço alvo" step="0.01">
+                    <form hx-post="/api/hx/alertas"
+                          hx-target="#alertasLista"
+                          hx-swap="innerHTML"
+                          hx-trigger="submit"
+                          hx-on::after-request="this.reset(); document.getElementById('alertasAtivados')?.hx.trigger('load')"
+                          hx-vals="js:{ produto: document.getElementById('alertaProduto').value, preco_alvo: document.getElementById('alertaPreco').value, condicao: document.getElementById('alertaCondicao').value }">
+                        <div class="row g-3">
+                            <div class="col-md-5">
+                                <input type="text" id="alertaProduto" class="form-control bg-dark text-white border-secondary"
+                                       placeholder="Nome do produto">
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark text-white border-secondary">R$</span>
+                                    <input type="number" id="alertaPreco" class="form-control bg-dark text-white border-secondary"
+                                           placeholder="Preço alvo" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <select id="alertaCondicao" class="form-select bg-dark text-white border-secondary">
+                                    <option value="menor">Preço menor que</option>
+                                    <option value="maior">Preço maior que</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-primary w-100" type="submit">
+                                    <i class="fa-solid fa-bell me-1"></i> Criar
+                                </button>
                             </div>
                         </div>
-                        <div class="col-md-2">
-                            <select id="alertaCondicao" class="form-select bg-dark text-white border-secondary">
-                                <option value="menor">Preço menor que</option>
-                                <option value="maior">Preço maior que</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <button class="btn btn-primary w-100" id="criarAlertaBtn">
-                                <i class="fa-solid fa-bell me-1"></i> Criar
-                            </button>
-                        </div>
-                    </div>
+                    </form>
                 </div>
 
                 <!-- Lista de Alertas -->
-                <div id="alertasLista">
-                    <div class="text-center text-secondary py-4">
-                        <i class="fa-solid fa-bell-slash fa-3x mb-3 opacity-25"></i>
-                        <p>Nenhum alerta configurado</p>
-                    </div>
+                <div id="alertasLista"
+                     hx-get="/api/hx/alertas"
+                     hx-trigger="load"
+                     hx-target="#alertasLista"
+                     hx-swap="innerHTML">
                 </div>
 
                 <!-- Alertas Ativados -->
-                <div id="alertasAtivados" class="d-none">
-                    <h6 class="text-success mb-3"><i class="fa-solid fa-check-circle me-1"></i> Alertas Ativados</h6>
-                    <div id="alertasAtivadosLista"></div>
+                <div id="alertasAtivados"
+                     hx-get="/api/hx/alertas/verificar"
+                     hx-trigger="load"
+                     hx-target="#alertasAtivados"
+                     hx-swap="innerHTML">
                 </div>
             </div>
         </div>
@@ -423,11 +426,11 @@
                 </h5>
                 <p class="text-secondary mb-3">Últimas buscas realizadas no sistema.</p>
 
-                <div id="historicoLista">
-                    <div class="text-center text-secondary py-4">
-                        <i class="fa-solid fa-inbox fa-3x mb-3 opacity-25"></i>
-                        <p>Nenhuma busca registrada ainda</p>
-                    </div>
+                <div id="historicoLista"
+                     hx-get="/api/hx/historico"
+                     hx-trigger="load"
+                     hx-target="#historicoLista"
+                     hx-swap="innerHTML">
                 </div>
             </div>
         </div>

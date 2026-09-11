@@ -1,0 +1,58 @@
+{# Fragment: resultados da comparação #}
+{% if erro %}
+<div class="text-center text-danger py-4">
+    <p>{{ erro }}</p>
+</div>
+{% elif comparacao %}
+<div class="row g-3">
+{% for c in comparacao %}
+    {% if c.erro %}
+    <div class="col-md-4">
+        <div class="compare-card">
+            <div class="compare-header">{{ c.termo }}</div>
+            <p class="text-danger">{{ c.erro }}</p>
+        </div>
+    </div>
+    {% else %}
+    {% set cores = {"Americanas": "primary", "Carrefour": "info", "KaBuM": "danger", "Samsung": "info", "Buscapé": "success", "Zoom": "warning", "Google Shopping": "secondary", "Google": "light"} %}
+    <div class="col-md-4">
+        <div class="compare-card">
+            <div class="compare-header text-white">{{ c.termo }}</div>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="compare-price text-success">{{ "R$ %.2f"|format(c.menor_preco) if c.menor_preco else "--" }}</span>
+                <small class="text-secondary">{{ c.resultados }} resultados</small>
+            </div>
+            {% if c.preco_medio %}
+            <small class="text-secondary">Média: {{ "R$ %.2f"|format(c.preco_medio) }}</small>
+            {% endif %}
+            <div class="mt-2">
+                {% for f in c.fontes|default([], true) %}
+                {% set cor = cores.get(f, "secondary") %}
+                <span class="badge bg-{{ cor }} bg-opacity-25 text-{{ cor }} border border-{{ cor }} border-opacity-50 me-1" style="font-size: 0.65rem;">{{ f }}</span>
+                {% endfor %}
+            </div>
+            {% if c.top_resultado %}
+            <hr class="border-secondary my-2">
+            <small class="text-muted d-block mb-1" style="font-size: 0.8rem;">
+                {{ c.top_resultado.nome|default("", true)|truncate(50) }}
+            </small>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold">{{ "R$ %.2f"|format(c.top_resultado.preco) if c.top_resultado.preco else "--" }}</span>
+                {% if c.top_resultado.permalink %}
+                <a href="{{ c.top_resultado.permalink }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary">
+                    <i class="fa-solid fa-external-link-alt"></i>
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+{% endfor %}
+</div>
+{% else %}
+<div class="text-center text-secondary py-5">
+    <i class="fa-solid fa-code-compare fa-3x mb-3 opacity-25"></i>
+    <p>Insira pelo menos 2 termos separados por vírgula</p>
+</div>
+{% endif %}

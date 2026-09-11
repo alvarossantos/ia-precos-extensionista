@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 def create_app() -> Flask:
     configurar_logging(debug=config.DEBUG)
 
-    app = Flask(__name__, static_folder="../static", static_url_path="")
+    app = Flask(__name__, static_folder="../static", static_url_path="",
+                template_folder="templates")
     app.config["JSON_AS_ASCII"] = False
 
     origins = "*" if config.CORS_ORIGINS == "*" else config.CORS_ORIGINS.split(",")

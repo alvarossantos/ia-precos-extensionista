@@ -1,0 +1,29 @@
+{# Fragment: estatísticas da busca #}
+{% if estatisticas %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="glass-card p-3 text-center">
+            <small class="text-secondary d-block">Menor Preço</small>
+            <span class="fs-4 fw-bold text-success">{{ "R$ %.2f"|format(estatisticas.menor_preco) if estatisticas.menor_preco else "--" }}</span>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-3 text-center">
+            <small class="text-secondary d-block">Maior Preço</small>
+            <span class="fs-4 fw-bold text-danger">{{ "R$ %.2f"|format(estatisticas.maior_preco) if estatisticas.maior_preco else "--" }}</span>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-3 text-center">
+            <small class="text-secondary d-block">Preço Médio</small>
+            <span class="fs-4 fw-bold text-primary">{{ "R$ %.2f"|format(estatisticas.preco_medio) if estatisticas.preco_medio else "--" }}</span>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="glass-card p-3 text-center">
+            <small class="text-secondary d-block">Fontes</small>
+            <span class="fs-6 fw-bold text-warning">{{ fontes|join(", ") if fontes else "--" }}</span>
+        </div>
+    </div>
+</div>
+{% endif %}

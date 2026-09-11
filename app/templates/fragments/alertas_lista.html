@@ -1,0 +1,30 @@
+{# Fragment: lista de alertas #}
+{% if not alertas %}
+<div class="text-center text-secondary py-4">
+    <i class="fa-solid fa-bell-slash fa-3x mb-3 opacity-25"></i>
+    <p>Nenhum alerta configurado</p>
+</div>
+{% else %}
+{% for a in alertas %}
+{% if a.ativo %}
+<div class="alerta-card ativado">
+    <div>
+        <span class="alerta-produto">{{ a.produto }}</span>
+        <span class="text-secondary ms-2">
+            {% if a.condicao == "menor" %}< Preço menor que{% else %}> Preço maior que{% endif %}
+            <span class="alerta-preco ms-1">{{ "R$ %.2f"|format(a.preco_alvo) }}</span>
+        </span>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-outline-danger"
+                hx-delete="/api/alertas/{{ a.id }}"
+                hx-confirm="Remover este alerta?"
+                hx-target="#alertasLista"
+                hx-swap="innerHTML">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}

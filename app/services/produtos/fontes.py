@@ -219,7 +219,7 @@ def buscar_zoom(produto: str, limite: int = 5):
 
 # ==================== SerpAPI (Google Shopping / Google orgânico) ====================
 
-def _serpapi_get(params: dict, timeout: int = 20):
+def _serpapi_get(params: dict, timeout: int = 30):
     """Chamada genérica à SerpAPI. Retorna JSON ou None (sem chave ou erro)."""
     if not config.SERPAPI_API_KEY:
         return None
@@ -236,10 +236,27 @@ def _serpapi_get(params: dict, timeout: int = 20):
         return None
 
 
+# Lojas nacionais conhecidas (para priorização no Google Shopping)
+_LOJAS_NACIONAIS = {
+    "kabum", "magazine luiza", "magalu", "americanas", "casas bahia",
+    "havan", "pontofrio", "submarino", "renner", "riachuelo",
+    "saraiva", "fast shop", "small", "extraport", "amazon.com.br",
+    "playstation store", "buscape", "zoom",
+}
+
+
+def _is_loja_nacional(source: str) -> bool:
+    """Verifica se a loja é brasileira conhecida."""
+    s = (source or "").lower()
+    return any(loja in s for loja in _LOJAS_NACIONAIS)
+
+
 def buscar_google_shopping(produto: str, limite: int = 5):
-    """Google Shopping via SerpAPI. Requer SERPAPI_API_KEY; sem chave, [].""" 
+    """Google Shopping via SerpAPI. Prioriza lojas nacionais."""
+    # Pede mais resultados para poder filtrar/priorizar
     dados = _serpapi_get({
-        "engine": "google_shopping", "q": produto, "hl": "pt-br", "gl": "br", "num": limite,
+        "engine": "google_shopping", "q": produto, "hl": "pt-br", "gl": "br",
+        "num": max(limite * 4, 20),
     })
     if not dados:
         return []
@@ -256,6 +273,7 @@ def buscar_google_shopping(produto: str, limite: int = 5):
         if not preco or preco <= 0:
             continue
 
+        source = item.get("source", "")
         resultados.append({
             "nome": item.get("title", ""),
             "preco": preco,
@@ -263,9 +281,18 @@ def buscar_google_shopping(produto: str, limite: int = 5):
             "moeda": "BRL",
             "permalink": item.get("product_link", "") or item.get("link", ""),
             "thumbnail": item.get("thumbnail", ""),
-            "fonte": "Google Shopping",
+            "fonte": f"Google Shopping ({source})" if source else "Google Shopping",
             "frete_gratis": False,
+            "_nacional": _is_loja_nacional(source),
         })
+
+    # Prioriza lojas nacionais, depois por preço
+    resultados.sort(key=lambda x: (not x.get("_nacional", False), x["preco"]))
+
+    # Remove flag interna
+    for r in resultados:
+        r.pop("_nacional", None)
+
     return resultados[:limite]
 
 
@@ -297,37 +324,41 @@ def buscar_google_organico(produto: str, limite: int = 5):
 # ==================== Mercado Livre ====================
 
 def buscar_mercadolivre(produto: str, limite: int = 5, access_token: str = None):
-    """Busca no Mercado Livre via API pública de sites/{site}/search.
+    """Busca no Mercado Livre — DESABILITADO.
 
-    Esse endpoint funciona SEM autenticação (é o que o projeto usa
-    para o histórico local — ver memória do projeto). Se um
-    `access_token` de OAuth estiver disponível (fluxo /api/ml/*), ele
-    é enviado para obter limites de uso mais altos, mas não é
-    obrigatório — o backend original exigia o token e falhava sem ele,
-    o que não reflete a documentação pública da API.
+    A API pública retorna 403 desde ~2025 (bloqueada sem OAuth).
+    A página de busca é SPA 100% JavaScript, impossível scrapar.
+    O Google Shopping não indexa produtos do ML.
+
+    Retorna [] sempre. Mantido para compatibilidade com FONTES_PADRAO.
+    Para reativar, é necessário um access_token OAuth válido.
     """
-    headers = {"Authorization": f"Bearer {access_token}"} if access_token else {}
-    resp = http_client.get(
-        f"{config.ML_BASE}/sites/{config.ML_SITE_ID}/search",
-        params={"q": produto, "limit": limite},
-        headers=headers,
-    )
-    resp.raise_for_status()
+    if not access_token:
+        return []
 
-    resultados = []
-    for item in resp.json().get("results", []):
-        preco = item.get("price", 0)
-        if preco <= 0:
-            continue
-
-        resultados.append({
-            "nome": item.get("title", ""),
-            "preco": preco,
-            "preco_original": item.get("original_price"),
-            "moeda": "BRL",
-            "permalink": item.get("permalink", ""),
-            "thumbnail": item.get("thumbnail", "").replace("http://", "https://"),
-            "fonte": "Mercado Livre",
-            "frete_gratis": item.get("shipping", {}).get("free_shipping", False),
-        })
-    return resultados
+    try:
+        headers = {"Authorization": f"Bearer {access_token}"}
+        resp = http_client.get(
+            f"{config.ML_BASE}/sites/{config.ML_SITE_ID}/search",
+            params={"q": produto, "limit": limite},
+            headers=headers,
+        )
+        resp.raise_for_status()
+        resultados = []
+        for item in resp.json().get("results", []):
+            preco = item.get("price", 0)
+            if preco <= 0:
+                continue
+            resultados.append({
+                "nome": item.get("title", ""),
+                "preco": preco,
+                "preco_original": item.get("original_price"),
+                "moeda": "BRL",
+                "permalink": item.get("permalink", ""),
+                "thumbnail": item.get("thumbnail", "").replace("http://", "https://"),
+                "fonte": "Mercado Livre",
+                "frete_gratis": item.get("shipping", {}).get("free_shipping", False),
+            })
+        return resultados
+    except Exception:
+        return []

@@ -21,13 +21,14 @@ from .ranking import ranking_relevancia
 logger = logging.getLogger(__name__)
 
 FONTES_PADRAO = [
-    "americanas", "kabum", "samsung", "buscape", "zoom",
+    "americanas", "carrefour", "kabum", "samsung", "buscape", "zoom",
     "google_shopping", "google_organico",
     # "mercadolivre",  # desabilitado: API retorna 403 sem OAuth
 ]
 
 _BUSCADORES = {
     "americanas": fontes.buscar_americanas,
+    "carrefour": fontes.buscar_carrefour,
     "kabum": fontes.buscar_kabum,
     "samsung": fontes.buscar_samsung,
     "buscape": fontes.buscar_buscape,

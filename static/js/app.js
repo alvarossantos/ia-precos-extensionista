@@ -508,6 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Cor da badge conforme fonte
             const fonteCores = {
                 'Americanas': 'primary',
+                'Carrefour': 'info',
                 'KaBuM': 'danger',
                 'Samsung': 'info',
                 'Mercado Livre': 'warning',
@@ -593,7 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const fontesBadge = (c.fontes || []).map(f => {
-                const cores = { 'Americanas': 'primary', 'KaBuM': 'danger', 'Samsung': 'info', 'Mercado Livre': 'warning', 'Buscapé': 'success', 'Zoom': 'warning', 'Google Shopping': 'secondary', 'Google': 'light' };
+                const cores = { 'Americanas': 'primary', 'Carrefour': 'info', 'KaBuM': 'danger', 'Samsung': 'info', 'Mercado Livre': 'warning', 'Buscapé': 'success', 'Zoom': 'warning', 'Google Shopping': 'secondary', 'Google': 'light' };
                 const cor = cores[f] || 'secondary';
                 return `<span class="badge bg-${cor} bg-opacity-25 text-${cor} border border-${cor} border-opacity-50 me-1" style="font-size: 0.65rem;">${escapeHtml(f)}</span>`;
         }).join('') + '</div>';

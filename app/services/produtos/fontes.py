@@ -24,10 +24,10 @@ logger = logging.getLogger(__name__)
 
 # ==================== Americanas (VTEX) ====================
 
-def buscar_americanas(produto: str, limite: int = 5):
-    """Americanas VTEX API — gratuita, sem autenticação."""
+def _buscar_vtex(base_url: str, fonte: str, loja: str, produto: str, limite: int = 5):
+    """Genérico para lojas VTEX (Americanas, Carrefour, etc)."""
     termo_url = quote(produto, safe="")
-    url = f"https://www.americanas.com.br/api/catalog_system/pub/products/search/{termo_url}"
+    url = f"{base_url}/api/catalog_system/pub/products/search/{termo_url}"
     resp = http_client.get(url, params={"_from": 0, "_to": limite - 1})
     resp.raise_for_status()
 
@@ -49,7 +49,7 @@ def buscar_americanas(produto: str, limite: int = 5):
         imgs = it.get("images", [])
         thumbnail = imgs[0].get("imageUrl", "") if imgs else ""
         link_text = item.get("linkText", "")
-        permalink = f"https://www.americanas.com.br/produto/{link_text}" if link_text else ""
+        permalink = f"{base_url}/produto/{link_text}" if link_text else ""
 
         resultados.append({
             "nome": item.get("productName", ""),
@@ -58,11 +58,21 @@ def buscar_americanas(produto: str, limite: int = 5):
             "moeda": "BRL",
             "permalink": permalink,
             "thumbnail": thumbnail,
-            "fonte": "Americanas",
-            "loja": "Americanas",
+            "fonte": fonte,
+            "loja": loja,
             "frete_gratis": False,
         })
     return resultados
+
+
+def buscar_americanas(produto: str, limite: int = 5):
+    """Americanas VTEX API — gratuita, sem autenticação."""
+    return _buscar_vtex("https://www.americanas.com.br", "Americanas", "Americanas", produto, limite)
+
+
+def buscar_carrefour(produto: str, limite: int = 5):
+    """Carrefour VTEX API — gratuita, sem autenticação."""
+    return _buscar_vtex("https://www.carrefour.com.br", "Carrefour", "Carrefour", produto, limite)
 
 
 # ==================== KaBuM ====================

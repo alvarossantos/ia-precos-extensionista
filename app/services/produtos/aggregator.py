@@ -106,12 +106,15 @@ def buscar_produtos(produto: str, limite: int = 5, fontes_selecionadas: list = N
 def buscar_ofertas(produto: str, limite: int = 5, fontes_selecionadas: list = None,
                     so_novos: bool = False) -> list:
     """Pipeline padrão: agrega fontes (paralelo) → filtra por relevância →
-    remove acessórios/jogos → valida URLs → ordena.
+    remove acessórios/jogos → aplica piso de preço → valida URLs → ordena.
     Busca 15 por fonte para compensar perdas nos filtros.
     """
     resultados = buscar_produtos(produto, limite=15, fontes_selecionadas=fontes_selecionadas)
     resultados = filtrar_relevancia(resultados, produto)
     resultados = [r for r in resultados if not eh_acessorio(r.get("nome", ""))]
+    minimo = preco_minimo_produto(produto)
+    if minimo:
+        resultados = [r for r in resultados if r.get("preco") is None or r["preco"] >= minimo]
     if so_novos:
         resultados = filtrar_novos(resultados, produto)
     resultados = validar_urls(resultados)

@@ -16,7 +16,7 @@ buscar_bp = Blueprint("buscar", __name__)
 def buscar():
     """Busca ampliada em múltiplas fontes."""
     produto = request.args.get("produto", "").strip()
-    limite = min(int_param(request, "limite", 5), 20)
+    limite = min(int_param(request, "limite", 5), 50)
     fontes_raw = request.args.get("fontes", ",".join(FONTES_PADRAO))
     fontes_selecionadas = [f.strip() for f in fontes_raw.split(",") if f.strip()]
     so_novos = request.args.get("so_novos", "").lower() in ("1", "true", "sim", "novos")

@@ -102,6 +102,12 @@ _TERMOS_ACESSORIO = (
     "mouse pad", "mousepad", "teclado ", "mouse ", "webcam",
 )
 
+# Sufixos que indicam jogo/acessório para o produto (não é o console)
+_SUFIXOS_ACESSORIO = (
+    "para ps5", "para ps4", "for ps5", "for ps4",
+    "para xbox", "for xbox", "para switch", "for switch",
+)
+
 # Produtos onde itens abaixo desse valor quase sempre são jogos/acessórios.
 _PRODUTOS_PRECO_MINIMO = {
     "playstation": 500, "ps5": 500, "ps4": 300,
@@ -123,11 +129,16 @@ def preco_minimo_produto(produto: str) -> float:
 def eh_acessorio(nome: str) -> bool:
     """Nome sugere acessório/jogo em vez do produto principal.
 
-    Só marca como acessório se o nome COMEÇA com termo de acessório.
-    Ex: 'Capa PS5' → acessório, 'Sony PlayStation 5 Console' → não.
+    Marca como acessório se:
+    - Nome começa com termo de acessório (ex: 'Capa PS5')
+    - Nome contém sufixo 'para PS5'/'for PS5' (ex: 'GRID Legends para PS5')
     """
     n = normalizar(nome)
-    return any(n.startswith(t) or f" {t}" in n for t in _TERMOS_ACESSORIO)
+    if any(n.startswith(t) or f" {t}" in n for t in _TERMOS_ACESSORIO):
+        return True
+    if any(s in n for s in _SUFIXOS_ACESSORIO):
+        return True
+    return False
 
 
 def filtrar_por_ia(resultados: list, produto: str) -> list:

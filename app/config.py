@@ -1,9 +1,8 @@
 """Configuração central da aplicação, carregada de variáveis de ambiente.
 
 Antes esses valores estavam espalhados como constantes soltas pelo
-mock_backend.py (TTL_HORAS_PADRAO, ML_BASE, OPENROUTER_BASE etc.).
-Centralizar aqui facilita trocar comportamento (timeouts, TTL, limites
-de rate limit) sem mexer em código, só no .env.
+mock_backend.py. Centralizar aqui facilita trocar comportamento
+(timeouts, TTL, limites) sem mexer em código, só no .env.
 """
 
 import os
@@ -51,13 +50,6 @@ class Config:
 
     # ---- Binance (cripto) ----
     BINANCE_BASE = "https://api.binance.com/api/v3"
-
-    # ---- Mercado Livre ----
-    ML_BASE = "https://api.mercadolibre.com"
-    ML_SITE_ID = os.getenv("ML_SITE_ID", "MLB")
-    ML_CLIENT_ID = os.getenv("ML_CLIENT_ID")
-    ML_CLIENT_SECRET = os.getenv("ML_CLIENT_SECRET")
-    ML_REDIRECT_URI = os.getenv("ML_REDIRECT_URI", "http://127.0.0.1:5000/api/ml/callback")
 
     # ---- SerpAPI (Google Shopping / Google orgânico) ----
     SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")

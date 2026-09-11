@@ -421,45 +421,4 @@ def buscar_google_organico(produto: str, limite: int = 5):
     return resultados[:limite]
 
 
-# ==================== Mercado Livre ====================
 
-def buscar_mercadolivre(produto: str, limite: int = 5, access_token: str = None):
-    """Busca no Mercado Livre — DESABILITADO.
-
-    A API pública retorna 403 desde ~2025 (bloqueada sem OAuth).
-    A página de busca é SPA 100% JavaScript, impossível scrapar.
-    O Google Shopping não indexa produtos do ML.
-
-    Retorna [] sempre. Mantido para compatibilidade com FONTES_PADRAO.
-    Para reativar, é necessário um access_token OAuth válido.
-    """
-    if not access_token:
-        return []
-
-    try:
-        headers = {"Authorization": f"Bearer {access_token}"}
-        resp = http_client.get(
-            f"{config.ML_BASE}/sites/{config.ML_SITE_ID}/search",
-            params={"q": produto, "limit": limite},
-            headers=headers,
-        )
-        resp.raise_for_status()
-        resultados = []
-        for item in resp.json().get("results", []):
-            preco = item.get("price", 0)
-            if preco <= 0:
-                continue
-            resultados.append({
-                "nome": item.get("title", ""),
-                "preco": preco,
-                "preco_original": item.get("original_price"),
-                "moeda": "BRL",
-                "permalink": item.get("permalink", ""),
-                "thumbnail": item.get("thumbnail", "").replace("http://", "https://"),
-                "fonte": "Mercado Livre",
-                "loja": "Mercado Livre",
-                "frete_gratis": item.get("shipping", {}).get("free_shipping", False),
-            })
-        return resultados
-    except Exception:
-        return []

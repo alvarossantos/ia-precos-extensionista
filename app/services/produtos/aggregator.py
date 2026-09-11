@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 FONTES_PADRAO = [
     "americanas", "carrefour", "kabum", "samsung", "buscape", "zoom",
     "google_shopping", "google_organico",
-    # "mercadolivre",  # desabilitado: API retorna 403 sem OAuth
 ]
 
 _BUSCADORES = {
@@ -35,7 +34,6 @@ _BUSCADORES = {
     "zoom": fontes.buscar_zoom,
     "google_shopping": fontes.buscar_google_shopping,
     "google_organico": fontes.buscar_google_organico,
-    "mercadolivre": fontes.buscar_mercadolivre,
 }
 
 

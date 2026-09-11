@@ -511,7 +511,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 'Carrefour': 'info',
                 'KaBuM': 'danger',
                 'Samsung': 'info',
-                'Mercado Livre': 'warning',
                 'Buscapé': 'success',
                 'Zoom': 'warning',
                 'Google Shopping': 'secondary',
@@ -594,7 +593,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const fontesBadge = (c.fontes || []).map(f => {
-                const cores = { 'Americanas': 'primary', 'Carrefour': 'info', 'KaBuM': 'danger', 'Samsung': 'info', 'Mercado Livre': 'warning', 'Buscapé': 'success', 'Zoom': 'warning', 'Google Shopping': 'secondary', 'Google': 'light' };
+                const cores = { 'Americanas': 'primary', 'Carrefour': 'info', 'KaBuM': 'danger', 'Samsung': 'info', 'Buscapé': 'success', 'Zoom': 'warning', 'Google Shopping': 'secondary', 'Google': 'light' };
                 const cor = cores[f] || 'secondary';
                 return `<span class="badge bg-${cor} bg-opacity-25 text-${cor} border border-${cor} border-opacity-50 me-1" style="font-size: 0.65rem;">${escapeHtml(f)}</span>`;
         }).join('') + '</div>';
@@ -745,7 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="historico-item">
                 <div>
                     <span class="text-white fw-medium">${escapeHtml(b.produto)}</span>
-                    <span class="badge bg-secondary ms-2">${escapeHtml(b.fonte || 'mercado_livre')}</span>
+                    <span class="badge bg-secondary ms-2">${escapeHtml(b.fonte || 'multi')}</span>
                 </div>
                 <small class="text-secondary">${formatDate(b.data)}</small>
             </div>

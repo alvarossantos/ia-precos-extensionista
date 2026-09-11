@@ -39,7 +39,7 @@ class HistoricoRepository:
             )
 
     def salvar_preco(self, produto: str, preco: float, nome_encontrado: str = None,
-                      moeda: str = "BRL", fonte: str = "mercado_livre"):
+                      moeda: str = "BRL", fonte: str = "multi"):
         with conexao(self.db_path) as conn:
             conn.execute(
                 """

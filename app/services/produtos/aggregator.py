@@ -81,7 +81,7 @@ def buscar_produtos(produto: str, limite: int = 5, fontes_selecionadas: list = N
 
     cacheados = _cache_memoria.get(cache_key)
     if cacheados is not None:
-        return cacheados[:limite]
+        return list(cacheados)
 
     todos = []
 

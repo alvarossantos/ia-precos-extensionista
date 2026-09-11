@@ -209,20 +209,21 @@ from ... import http_client
 
 
 def _url_tem_conteudo(url: str) -> bool:
-    """Verifica se uma URL não é claramente quebrada (404, timeout, connection error).
+    """Verifica se uma URL não é claramente quebrada.
 
-    NÃO remove URLs que retornam 200 com conteúdo pequeno — alguns sites
-    (Americanas, ML, iPlace) retornam páginas leves mas funcionais no navegador.
-    Só rejeita se: status 404/410, ou erro de conexão (não timeout).
-    Timeout → mantém (pode ser anti-bot ou site lento).
+    404/410 com conteúdo pequeno (<5KB) → removida.
+    404/410 com conteúdo grande (>=5KB) → mantém (SPA como Americanas retorna 404 mas funciona no browser).
+    Timeout/connection error → mantém (fail-open).
     """
     if not url or not url.startswith("http"):
         return False
     try:
         resp = http_client.get(url, timeout=12, allow_redirects=True)
-        # Só rejeita 404/410 (página não encontrada)
-        if resp.status_code in (404, 410):
+        # 404/410 com pouco conteúdo = página realmente não existe
+        if resp.status_code in (404, 410) and len(resp.text) < 5000:
             return False
+        return True
+    except Exception:
         return True
     except Exception:
         # Qualquer erro (timeout, connection, etc) → mantém (fail-open)

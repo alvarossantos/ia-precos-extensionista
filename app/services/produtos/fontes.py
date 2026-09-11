@@ -59,6 +59,7 @@ def buscar_americanas(produto: str, limite: int = 5):
             "permalink": permalink,
             "thumbnail": thumbnail,
             "fonte": "Americanas",
+            "loja": "Americanas",
             "frete_gratis": False,
         })
     return resultados
@@ -103,6 +104,7 @@ def buscar_kabum(produto: str, limite: int = 5):
             "permalink": permalink,
             "thumbnail": thumb,
             "fonte": "KaBuM",
+            "loja": "KaBuM",
             "frete_gratis": bool(attrs.get("has_free_shipping", False)),
             "desconto": attrs.get("discount_percentage", 0),
         })
@@ -144,12 +146,43 @@ def buscar_samsung(produto: str, limite: int = 5):
             "permalink": permalink,
             "thumbnail": thumb,
             "fonte": "Samsung",
+            "loja": "Samsung",
             "frete_gratis": False,
         })
     return resultados
 
 
 # ==================== Buscapé / Zoom (mesma engine Mosaico) ====================
+
+def _extrair_url_loja_direta(item: dict, base_url: str) -> str | None:
+    """Tenta extrair URL direta da loja (ex: Amazon) a partir dos dados do hit.
+
+    Buscapé/Zoom não expõem links diretos das lojas, mas o campo
+    'externalReviewsUrl' às vezes contém a URL de reviews da Amazon
+    com o ASIN, que permite construir o link direto do produto.
+    """
+    # Tenta extrair ASIN da Amazon do externalReviewsUrl
+    ext_url = item.get("externalReviewsUrl", "")
+    if "amazon" in ext_url:
+        m = re.search(r"/(B[A-Z0-9]{9})", ext_url)
+        if m:
+            asin = m.group(1)
+            return f"https://www.amazon.com.br/dp/{asin}"
+
+    # Tenta extrair de reviews[].externalReviewsUrl (estrutura aninhada)
+    reviews = item.get("reviews", [])
+    if isinstance(reviews, list):
+        for rev in reviews:
+            if isinstance(rev, dict):
+                ext = rev.get("externalReviewsUrl", "")
+                if "amazon" in ext:
+                    m = re.search(r"/(B[A-Z0-9]{9})", ext)
+                    if m:
+                        asin = m.group(1)
+                        return f"https://www.amazon.com.br/dp/{asin}"
+
+    return None
+
 
 def _parse_mosaico_hits(html: str, base_url: str, limite: int, fonte: str):
     """Parser genérico para Buscapé/Zoom.
@@ -190,14 +223,23 @@ def _parse_mosaico_hits(html: str, base_url: str, limite: int, fonte: str):
         permalink = url if url.startswith("http") else f"{base_url}{url}"
         permalink = permalink.split("?")[0]
 
+        # Tenta extrair URL direta da loja (Amazon)
+        url_loja = _extrair_url_loja_direta(item, base_url)
+
+        # Nome da loja (melhor oferta)
+        best_offer = item.get("bestOffer", {})
+        loja = best_offer.get("merchantName", "") if isinstance(best_offer, dict) else ""
+
         resultados.append({
             "nome": item.get("name", ""),
             "preco": preco,
             "preco_original": None,
             "moeda": "BRL",
-            "permalink": permalink,
+            "permalink": url_loja or permalink,
+            "permalink_detalhe": permalink if url_loja else None,
             "thumbnail": item.get("image", ""),
             "fonte": fonte,
+            "loja": loja,
             "frete_gratis": False,
         })
     return resultados
@@ -281,7 +323,8 @@ def buscar_google_shopping(produto: str, limite: int = 5):
             "moeda": "BRL",
             "permalink": item.get("product_link", "") or item.get("link", ""),
             "thumbnail": item.get("thumbnail", ""),
-            "fonte": f"Google Shopping ({source})" if source else "Google Shopping",
+            "fonte": "Google Shopping",
+            "loja": source,
             "frete_gratis": False,
             "_nacional": _is_loja_nacional(source),
         })
@@ -316,6 +359,7 @@ def buscar_google_organico(produto: str, limite: int = 5):
             "permalink": item.get("link", ""),
             "thumbnail": item.get("favicon", ""),
             "fonte": "Google",
+            "loja": "",
             "frete_gratis": False,
         })
     return resultados[:limite]
@@ -357,6 +401,7 @@ def buscar_mercadolivre(produto: str, limite: int = 5, access_token: str = None)
                 "permalink": item.get("permalink", ""),
                 "thumbnail": item.get("thumbnail", "").replace("http://", "https://"),
                 "fonte": "Mercado Livre",
+                "loja": "Mercado Livre",
                 "frete_gratis": item.get("shipping", {}).get("free_shipping", False),
             })
         return resultados

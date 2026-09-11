@@ -522,9 +522,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? (r.nome.length > 60 ? r.nome.substring(0, 60) + '...' : r.nome)
                 : 'Sem nome';
 
+            const lojaNome = r.loja || r.fonte || 'Loja';
+            const urlDetalhe = r.permalink_detalhe || '';
+
             return `
                 <div class="col-md-6 col-lg-4">
-                    <div class="product-card position-relative" data-permalink="${escapeHtml(r.permalink || '')}">
+                    <div class="product-card position-relative" data-permalink="${escapeHtml(r.permalink || '')}"
+                         ${urlDetalhe ? `data-detalhe="${escapeHtml(urlDetalhe)}"` : ''}>
                         ${desconto > 0 ? `<span class="discount-badge">-${desconto}%</span>` : ''}
                         <div class="d-flex gap-3">
                             <img src="${escapeHtml(r.thumbnail || '')}" class="product-thumb" alt="${escapeHtml(r.nome || '')}" loading="lazy"
@@ -539,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 </div>
                                 <div class="d-flex gap-2 flex-wrap">
                                     <span class="badge bg-${fonteCor} bg-opacity-25 text-${fonteCor} border border-${fonteCor} border-opacity-50" style="font-size: 0.7rem;">
-                                        <i class="fa-solid fa-store me-1"></i>${escapeHtml(r.fonte || 'Loja')}
+                                        <i class="fa-solid fa-store me-1"></i>${escapeHtml(lojaNome)}
                                     </span>
                                     ${r.frete_gratis ? '<span class="badge badge-frete"><i class="fa-solid fa-truck me-1"></i>Frete Grátis</span>' : ''}
                                 </div>

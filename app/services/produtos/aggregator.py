@@ -69,11 +69,13 @@ _cache_memoria = _CacheEmMemoria()
 
 
 def buscar_produtos(produto: str, limite: int = 5, fontes_selecionadas: list = None) -> list:
-    """Busca em múltiplas fontes e agrega os resultados.
+    """Busca em múltiplas fontes em paralelo e agrega os resultados.
 
     Uma fonte que falhar é logada e ignorada — não derruba a busca
     inteira (fail-open por fonte).
     """
+    import concurrent.futures
+
     fontes_selecionadas = fontes_selecionadas or FONTES_PADRAO
     cache_key = f"produtos:{produto}:{','.join(sorted(fontes_selecionadas))}"
 
@@ -82,14 +84,21 @@ def buscar_produtos(produto: str, limite: int = 5, fontes_selecionadas: list = N
         return cacheados[:limite]
 
     todos = []
-    for nome_fonte in fontes_selecionadas:
+
+    def _buscar(nome_fonte):
         buscador = _BUSCADORES.get(nome_fonte)
         if buscador is None:
-            continue
+            return []
         try:
-            todos.extend(buscador(produto, limite))
+            return buscador(produto, limite)
         except Exception as e:
             logger.warning("Fonte '%s' falhou para '%s': %s", nome_fonte, produto, e)
+            return []
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(fontes_selecionadas)) as executor:
+        resultados = list(executor.map(_buscar, fontes_selecionadas))
+        for lista in resultados:
+            todos.extend(lista)
 
     todos.sort(key=lambda x: (x.get("preco") is None, x.get("preco") or float("inf")))
     _cache_memoria.set(cache_key, todos)
@@ -98,10 +107,11 @@ def buscar_produtos(produto: str, limite: int = 5, fontes_selecionadas: list = N
 
 def buscar_ofertas(produto: str, limite: int = 5, fontes_selecionadas: list = None,
                     so_novos: bool = False) -> list:
-    """Pipeline padrão: agrega fontes → filtra por relevância textual →
-    remove acessórios/jogos → remove usados → valida URLs → ordena.
+    """Pipeline padrão: agrega fontes (paralelo) → filtra por relevância →
+    remove acessórios/jogos → valida URLs → ordena.
+    Busca 15 por fonte para compensar perdas nos filtros.
     """
-    resultados = buscar_produtos(produto, limite=max(limite, 10), fontes_selecionadas=fontes_selecionadas)
+    resultados = buscar_produtos(produto, limite=15, fontes_selecionadas=fontes_selecionadas)
     resultados = filtrar_relevancia(resultados, produto)
     resultados = [r for r in resultados if not eh_acessorio(r.get("nome", ""))]
     if so_novos:

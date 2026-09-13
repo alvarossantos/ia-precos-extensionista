@@ -9,7 +9,7 @@ const HistoricoTab = {
 
       <div v-if="buscas.length">
         <div v-for="(b, i) in buscas" :key="i"
-             class="d-flex justify-content-between align-items-center glass-card p-3 mb-2">
+             class="d-flex flex-wrap justify-content-between align-items-center gap-2 glass-card p-3 mb-2">
           <div>
             <span class="text-white fw-semibold">{{ b.produto }}</span>
             <span v-if="b.fonte" class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-50 ms-2" style="font-size:0.65rem;">

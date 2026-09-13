@@ -7,7 +7,7 @@ const DashboardTab = {
         <div class="col-lg-5">
           <div class="glass-card h-100 p-4 d-flex flex-column justify-content-between">
             <div>
-              <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-3 dashboard-header">
                 <h5 class="fw-semibold mb-0 text-white">
                   <i class="fa-solid fa-coins me-2 text-warning"></i>Ativo Selecionado
                 </h5>
@@ -106,7 +106,7 @@ const DashboardTab = {
       <div class="row">
         <div class="col-12">
           <div class="glass-card p-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 chart-header">
               <h5 class="fw-semibold mb-0 text-white">
                 <i class="fa-solid fa-chart-line me-2 text-info"></i>Histórico de Preços
               </h5>
@@ -153,7 +153,7 @@ const DashboardTab = {
               </div>
             </div>
 
-            <div class="row g-3 mb-3">
+            <div class="row g-3 mb-3 stats-grid">
               <div class="col-md-3">
                 <div class="glass-card p-3 text-center h-100">
                   <small class="text-secondary d-block"><i class="fa-solid fa-arrow-down text-success me-1"></i>Menor Preço</small>
@@ -185,7 +185,7 @@ const DashboardTab = {
             <!-- Best offer -->
             <div v-if="melhorOferta" class="glass-card p-3">
               <small class="text-secondary d-block mb-2"><i class="fa-solid fa-crown text-warning me-1"></i>Melhor Oferta</small>
-              <div class="d-flex align-items-center gap-3">
+              <div class="d-flex align-items-center gap-3 melhor-oferta-row">
                 <img v-if="melhorOferta.thumbnail" :src="melhorOferta.thumbnail" class="product-thumb"
                      style="width:48px;height:48px;object-fit:cover;border-radius:6px;" alt="oferta">
                 <div class="flex-grow-1">

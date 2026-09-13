@@ -23,7 +23,7 @@ const BuscarTab = {
       </form>
 
       <!-- Stats -->
-      <div v-if="stats" class="row g-3 mb-4">
+      <div v-if="stats" class="row g-3 mb-4 stats-grid">
         <div class="col-md-3">
           <div class="glass-card p-3 text-center h-100">
             <small class="text-secondary d-block"><i class="fa-solid fa-arrow-down text-success me-1"></i>Menor Preço</small>

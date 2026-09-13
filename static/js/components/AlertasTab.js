@@ -10,7 +10,7 @@ const AlertasTab = {
       <!-- Criar Alerta -->
       <div class="glass-card p-3 mb-4 border border-primary">
         <h6 class="text-primary mb-3"><i class="fa-solid fa-plus-circle me-1"></i> Novo Alerta</h6>
-        <form @submit.prevent="criar">
+        <form @submit.prevent="criar" class="alertas-form">
           <div class="row g-3">
             <div class="col-md-5">
               <input type="text" v-model="novo.produto" class="form-control bg-dark text-white border-secondary"
@@ -41,7 +41,7 @@ const AlertasTab = {
       <!-- Alertas Ativados -->
       <div v-if="atingidos.length" class="alert alert-success bg-success bg-opacity-10 border-success mb-4">
         <h6 class="alert-heading"><i class="fa-solid fa-bell-ring me-1"></i> Alertas Ativados</h6>
-        <div v-for="a in atingidos" :key="a.id" class="d-flex justify-content-between align-items-center mb-2">
+        <div v-for="a in atingidos" :key="a.id" class="d-flex justify-content-between align-items-center mb-2 alert-ativado-item">
           <span>
             <strong>{{ a.produto }}</strong> — Preço atual: <span class="text-success fw-bold">{{ formatPrice(a.preco_atual) }}</span>
             ({{ a.condicao === 'menor' ? '<' : '>' }} {{ formatPrice(a.preco_alvo) }})
@@ -53,7 +53,7 @@ const AlertasTab = {
       <!-- Lista de Alertas -->
       <div v-if="alertas.length">
         <div v-for="a in alertas" :key="a.id"
-             class="d-flex justify-content-between align-items-center glass-card p-3 mb-2">
+             class="d-flex justify-content-between align-items-center glass-card p-3 mb-2 alert-list-item">
           <div>
             <span class="text-white fw-semibold">{{ a.produto }}</span>
             <span class="text-secondary ms-2">

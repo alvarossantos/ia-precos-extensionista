@@ -406,23 +406,124 @@ select.form-select:focus {
     border-radius: 0.25rem;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .product-card .product-thumb {
-        width: 60px;
-        height: 60px;
-    }
+/* ==================== RESPONSIVIDADE MOBILE ==================== */
 
-    .compare-card .compare-price {
-        font-size: 1.2rem;
-    }
+/* XS: < 576px (phones pequenos) */
+@media (max-width: 575.98px) {
+    .glass-card { border-radius: 0.75rem; }
+    .glass-card.p-4 { padding: 1rem !important; }
+    .glass-card.p-3 { padding: 0.75rem !important; }
 
-    .compare-card {
-        padding: 1rem;
-    }
+    /* Navbar compacta */
+    .navbar .container { gap: 0.5rem; }
+    .navbar-brand { font-size: 1rem !important; }
+    .navbar-brand i { font-size: 1rem !important; }
+
+    /* Tabs: scroll horizontal */
+    .nav-pills { gap: 0.2rem; padding: 0.25rem !important; }
+    .nav-pills .nav-link { padding: 0.4rem 0.6rem; font-size: 0.78rem; }
+
+    /* Dashboard: preço menor, stats 2x2 */
+    .display-4 { font-size: 1.6rem !important; }
+
+    /* Stats grid → 2 colunas */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+
+    /* Dashboard header: empilhar */
+    .dashboard-header { flex-direction: column !important; gap: 0.5rem; }
+    .dashboard-header h5 { font-size: 0.9rem; }
+
+    /* Chart header: empilhar */
+    .chart-header { flex-direction: column !important; gap: 0.5rem; align-items: flex-start !important; }
+
+    /* Product cards: 1 coluna, thumbnail menor */
+    .product-card .product-thumb { width: 48px; height: 48px; }
+    .product-card { padding: 0.6rem; }
+    .product-card .product-price { font-size: 1rem; }
+    .product-card h6 { font-size: 0.78rem; }
+
+    /* Alert form inline: empilhar */
+    .alert-form-inline .row { gap: 0.3rem !important; }
+    .alert-form-inline .row > div { flex: 0 0 100% !important; max-width: 100% !important; }
+    .alert-form-inline .row > .col-auto { flex: 0 0 auto !important; }
+    .alert-form-inline .row > .col-auto:last-child { display: flex; gap: 0.25rem; }
+
+    /* Alertas form: empilhar */
+    .alertas-form .row > div { flex: 0 0 100% !important; max-width: 100% !important; }
+
+    /* Alertas list: layout compacto */
+    .alert-list-item { flex-direction: column !important; align-items: flex-start !important; gap: 0.5rem; }
+    .alert-list-item .btn { width: 100%; }
+
+    /* Activated alerts: empilhar */
+    .alert-ativado-item { flex-direction: column !important; align-items: flex-start !important; gap: 0.4rem; }
+
+    /* Comparar cards: 1 coluna */
+    .compare-card { padding: 0.75rem; }
+    .compare-card .compare-price { font-size: 1.2rem; }
+
+    /* Footer */
+    footer { font-size: 0.75rem; padding: 1rem 0 !important; }
+
+    /* Melhor oferta: empilhar */
+    .melhor-oferta-row { flex-direction: column !important; align-items: flex-start !important; gap: 0.5rem; }
+    .melhor-oferta-row .btn { width: 100%; }
 }
 
-/* Compare Card - conteúdo não escapa */
+/* SM: 576px - 767.98px (phones grandes) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    .glass-card.p-4 { padding: 1.25rem !important; }
+
+    .display-4 { font-size: 2rem !important; }
+
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    .product-card .product-thumb { width: 56px; height: 56px; }
+
+    .chart-header { gap: 0.5rem; }
+}
+
+/* MD: 768px - 991.98px (tablets) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+}
+
+/* Chart responsivo */
+@media (max-width: 768px) {
+    .chart-container { height: 260px !important; }
+}
+
+@media (min-width: 992px) {
+    .chart-container { height: 400px; }
+}
+
+/* Foco acessível e consistente */
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Evita overflow horizontal */
+html, body {
+    overflow-x: hidden;
+}
+
+/* Tabs: scroll horizontal em mobile */
+.nav-pills {
+    gap: 0.25rem;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.nav-pills::-webkit-scrollbar { display: none; }
+.nav-pills .nav-link {
+    white-space: nowrap;
+}
+
+/* Compare Card - overflow control */
 .compare-card .badge {
     display: inline-block;
     max-width: 100%;
@@ -441,62 +542,11 @@ select.form-select:focus {
     gap: 0.25rem;
 }
 
-/* ==================== MELHORIAS DE RESPONSIVIDADE E DESIGN ==================== */
-
-/* Evita overflow horizontal em qualquer tela */
-html, body {
-    overflow-x: hidden;
-}
-
-/* Navbar: ícones e texto alinham bem em mobile */
-.nav-pills {
-    gap: 0.25rem;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-}
-.nav-pills::-webkit-scrollbar { display: none; }
-.nav-pills .nav-link {
-    white-space: nowrap;
-}
-
-/* Cards com melhor hierarquia de padding em telas médias */
-@media (max-width: 576px) {
-    .glass-card { border-radius: 0.75rem; }
-    .glass-card.p-4 { padding: 1rem !important; }
-
-    /* Preço principal do dashboard escala em telas pequenas */
-    #currentPrice { font-size: 2.5rem; }
-
-    /* Ajusta a coluna da navbar: botões de tema/ativo não quebram linha */
-    .navbar .container {
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-
-    /* Formulários em pilha para melhor UX mobile */
+/* Input groups: wrap em mobile */
+@media (max-width: 575.98px) {
     .input-group { flex-wrap: wrap; }
     .input-group > .form-select { max-width: 100% !important; width: 100% !important; }
     .input-group > .btn { width: 100%; margin-top: 0.5rem; }
-
-    /* Cards de produto em 1 coluna com mais espaço */
-    .product-card .product-thumb { width: 56px; height: 56px; }
-    .product-card { padding: 0.75rem; }
-    .product-card .product-price { font-size: 1.1rem; }
-}
-
-/* Altura mínima do gráfico em telas altas para não esmagar */
-@media (min-width: 992px) {
-    .chart-container { height: 420px; }
-}
-
-/* Foco acessível e consistente */
-.btn:focus-visible,
-.form-control:focus-visible,
-.form-select:focus-visible {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
 }
 
 /* Badge de switch "Só novos" mais legível */
@@ -513,4 +563,47 @@ html, body {
 /* Botão de análise IA com animação sutil ao hover */
 #analiseIaBtn:hover {
     box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Badge bg-dark no light mode */
+[data-bs-theme="light"] .badge.bg-dark {
+    background-color: rgba(0,0,0,0.15) !important;
+}
+
+[data-bs-theme="light"] .badge.bg-success {
+    background-color: rgba(16,185,129,0.15) !important;
+    color: #059669 !important;
+}
+
+[data-bs-theme="light"] .btn-primary {
+    color: #fff;
+}
+
+[data-bs-theme="light"] .btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+[data-bs-theme="light"] .btn-outline-secondary {
+    color: var(--text-muted);
+    border-color: var(--input-border);
+}
+
+[data-bs-theme="light"] .btn-outline-danger {
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+[data-bs-theme="light"] .btn-outline-success {
+    color: var(--success-color);
+    border-color: var(--success-color);
+}
+
+[data-bs-theme="light"] .btn-outline-warning {
+    color: #b45309;
+    border-color: var(--warning-color);
+}
+
+[data-bs-theme="light"] .progress {
+    background-color: rgba(0,0,0,0.08);
 }

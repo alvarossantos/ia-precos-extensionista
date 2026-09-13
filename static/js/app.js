@@ -23,14 +23,14 @@ const AppShell = {
         <div class="container">
           <a class="navbar-brand d-flex align-items-center fw-bold" href="#/dashboard">
             <i class="fa-solid fa-brain text-primary me-2 fs-3"></i>
-            <span class="gradient-text">Preditor IA</span>
+            <span class="gradient-text">PreçoCerto</span>
           </a>
           <div class="d-flex align-items-center gap-3">
             <span class="badge bg-primary-subtle text-primary border border-primary rounded-pill px-3 py-2">
               <i class="fa-solid fa-circle-nodes me-1"></i> Ativo
             </span>
-            <button class="btn btn-sm btn-outline-secondary" @click="toggleTheme" title="Alternar tema">
-              <i class="fa-solid fa-circle-half-stroke"></i>
+            <button class="btn btn-sm btn-outline-secondary" @click="toggleTheme" :title="isDark ? 'Modo claro' : 'Modo escuro'">
+              <i :class="isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon'"></i>
             </button>
           </div>
         </div>
@@ -59,11 +59,17 @@ const AppShell = {
 
         <!-- Footer -->
         <footer class="mt-5 text-center text-secondary py-3 border-top border-secondary border-opacity-25">
-          <small>Preditor IA — Atividade Extensionista (UEMG Passos). Dados via Binance API e lojas brasileiras.</small>
+          <small>PreçoCerto — Atividade Extensionista (UEMG Passos). Dados via Binance API e lojas brasileiras.</small>
         </footer>
       </div>
     </div>
   `,
+
+  data() {
+    return {
+      isDark: document.documentElement.getAttribute('data-bs-theme') !== 'light',
+    };
+  },
 
   computed: {
     tabRoutes() {
@@ -75,8 +81,19 @@ const AppShell = {
     toggleTheme() {
       const html = document.documentElement;
       const current = html.getAttribute('data-bs-theme');
-      html.setAttribute('data-bs-theme', current === 'dark' ? 'light' : 'dark');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-bs-theme', next);
+      this.isDark = next === 'dark';
+      localStorage.setItem('precocerto-theme', next);
     },
+  },
+
+  created() {
+    const saved = localStorage.getItem('precocerto-theme');
+    if (saved) {
+      document.documentElement.setAttribute('data-bs-theme', saved);
+      this.isDark = saved === 'dark';
+    }
   },
 };
 

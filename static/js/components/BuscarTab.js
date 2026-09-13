@@ -1,4 +1,4 @@
-/* BuscarTab — Product search with stats + results grid */
+/* BuscarTab — Product search with stats + results grid + alert creation */
 const BuscarTab = {
   template: `
     <div class="glass-card p-4">
@@ -57,8 +57,8 @@ const BuscarTab = {
       </div>
       <div v-else-if="resultados.length" class="row g-3">
         <div v-for="(r, i) in resultados" :key="i" class="col-md-6 col-lg-4">
-          <div class="product-card position-relative" @click="abrirLink(r.permalink)">
-            <div class="d-flex gap-3">
+          <div class="product-card position-relative">
+            <div class="d-flex gap-3" @click="abrirLink(r.permalink)" style="cursor:pointer">
               <img v-if="r.thumbnail" :src="r.thumbnail" class="product-thumb" :alt="r.nome" loading="lazy"
                    @error="$event.target.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22><rect fill=%22%23334155%22 width=%2280%22 height=%2280%22/><text fill=%22%2364748b%22 x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2214%22>IMG</text></svg>'">
               <div class="flex-grow-1">
@@ -76,6 +76,44 @@ const BuscarTab = {
                   <span v-if="r.frete_gratis" class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50" style="font-size: 0.7rem;">
                     <i class="fa-solid fa-truck me-1"></i>Frete Grátis
                   </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Alert button + inline form -->
+            <div class="mt-2 pt-2 border-top border-secondary border-opacity-25">
+              <button v-if="alertaAberto !== i" class="btn btn-sm btn-outline-warning w-100"
+                      @click.stop="abrirAlerta(i, r)">
+                <i class="fa-solid fa-bell me-1"></i> Criar Alerta
+              </button>
+              <div v-else class="alert-form-inline" @click.stop>
+                <div class="row g-2 align-items-end">
+                  <div class="col">
+                    <label class="form-label text-secondary" style="font-size:0.7rem;">Preço alvo</label>
+                    <div class="input-group input-group-sm">
+                      <span class="input-group-text bg-dark text-white border-secondary" style="font-size:0.75rem;">R$</span>
+                      <input type="number" v-model.number="alertaForm.preco_alvo" class="form-control bg-dark text-white border-secondary"
+                             placeholder="0.00" step="0.01" min="0.01" style="font-size:0.8rem;">
+                    </div>
+                  </div>
+                  <div class="col-auto">
+                    <select v-model="alertaForm.condicao" class="form-select form-select-sm bg-dark text-white border-secondary" style="font-size:0.75rem; width:auto;">
+                      <option value="menor">&lt; valor</option>
+                      <option value="maior">&gt; valor</option>
+                    </select>
+                  </div>
+                  <div class="col-auto">
+                    <button class="btn btn-sm btn-warning" @click="criarAlerta(i)" :disabled="alertaCriando || !alertaForm.preco_alvo">
+                      <i v-if="alertaCriando" class="fa-solid fa-spinner fa-spin"></i>
+                      <i v-else class="fa-solid fa-check"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary ms-1" @click="alertaAberto = null">
+                      <i class="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
+                </div>
+                <div v-if="alertaFeedback" class="mt-1" :class="alertaFeedback.ok ? 'text-success' : 'text-danger'" style="font-size:0.75rem;">
+                  {{ alertaFeedback.msg }}
                 </div>
               </div>
             </div>
@@ -104,6 +142,10 @@ const BuscarTab = {
       loading: false,
       searched: false,
       lastQuery: '',
+      alertaAberto: null,
+      alertaForm: { produto: '', preco_alvo: null, condicao: 'menor' },
+      alertaCriando: false,
+      alertaFeedback: null,
     };
   },
 
@@ -114,6 +156,7 @@ const BuscarTab = {
       this.erro = null;
       this.searched = true;
       this.lastQuery = this.query;
+      this.alertaAberto = null;
 
       const params = new URLSearchParams({ produto: this.query, limite: this.limite });
       const data = await fetchJSON(`${API_BASE}/buscar?${params}`);
@@ -130,6 +173,41 @@ const BuscarTab = {
       }
 
       this.loading = false;
+    },
+
+    abrirAlerta(idx, resultado) {
+      this.alertaAberto = idx;
+      this.alertaFeedback = null;
+      this.alertaForm = {
+        produto: resultado.nome || this.lastQuery,
+        preco_alvo: resultado.preco || null,
+        condicao: 'menor',
+      };
+    },
+
+    async criarAlerta(idx) {
+      if (!this.alertaForm.produto || !this.alertaForm.preco_alvo) return;
+      this.alertaCriando = true;
+      this.alertaFeedback = null;
+
+      try {
+        const r = await fetch(`${API_BASE}/alertas`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.alertaForm),
+        });
+        const data = await r.json();
+        if (r.ok) {
+          this.alertaFeedback = { ok: true, msg: 'Alerta criado!' };
+          setTimeout(() => { this.alertaAberto = null; this.alertaFeedback = null; }, 1500);
+        } else {
+          this.alertaFeedback = { ok: false, msg: data.erro || 'Erro ao criar alerta.' };
+        }
+      } catch (e) {
+        this.alertaFeedback = { ok: false, msg: 'Falha na conexão.' };
+      }
+
+      this.alertaCriando = false;
     },
 
     abrirLink(url) {

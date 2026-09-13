@@ -1,5 +1,5 @@
 /* Vue 3 app — Router + Root shell */
-const { createApp, ref, computed } = Vue;
+const { createApp } = Vue;
 const { createRouter, createWebHashHistory } = VueRouter;
 
 /* ---------- Router ---------- */
@@ -81,6 +81,16 @@ const AppShell = {
 };
 
 /* ---------- Mount ---------- */
-const app = createApp(AppShell);
-app.use(router);
-app.mount('#app');
+try {
+  const app = createApp(AppShell);
+  app.use(router);
+  app.mount('#app');
+  console.log('[Vue] App montada com sucesso');
+} catch (e) {
+  console.error('[Vue] Erro ao montar app:', e);
+  document.getElementById('app').innerHTML =
+    '<div class="container py-5 text-center">' +
+    '<h3 class="text-danger">Erro ao carregar aplicação</h3>' +
+    '<pre class="text-start mt-3 p-3 bg-dark text-light rounded" style="font-size:0.8rem">' + e.message + '</pre>' +
+    '<p class="text-secondary mt-2">Abra o Console (F12) para mais detalhes.</p></div>';
+}

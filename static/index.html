@@ -10,16 +10,17 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    <style>[v-cloak]{display:none!important}</style>
 </head>
 <body>
 
-    <div id="app"></div>
+    <div id="app" v-cloak></div>
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Vue 3 + Vue Router -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-    <script src="https://unpkg.com/vue-router@4/dist/vue-router.global.prod.js"></script>
+    <!-- Vue 3 + Vue Router (dev build — full template compiler) -->
+    <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vue-router@4.5.0/dist/vue-router.global.js"></script>
     <!-- API helpers (must load before components) -->
     <script src="js/api.js"></script>
     <!-- Components -->

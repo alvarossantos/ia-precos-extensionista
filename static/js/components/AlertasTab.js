@@ -1,4 +1,4 @@
-/* AlertasTab — CRUD de alertas de preço */
+/* AlertasTab — CRUD de alertas de preço (localStorage + verificação client-side) */
 const AlertasTab = {
   template: `
     <div class="glass-card p-4">
@@ -41,7 +41,7 @@ const AlertasTab = {
       <!-- Alertas Ativados -->
       <div v-if="atingidos.length" class="alert alert-success bg-success bg-opacity-10 border-success mb-4">
         <h6 class="alert-heading"><i class="fa-solid fa-bell-ring me-1"></i> Alertas Ativados</h6>
-        <div v-for="a in atingidos" :key="a.id" class="d-flex justify-content-between align-items-center mb-2 alert-ativado-item">
+        <div v-for="a in atingidos" :key="a.id" class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2 alert-ativado-item">
           <span>
             <strong>{{ a.produto }}</strong> — Preço atual: <span class="text-success fw-bold">{{ formatPrice(a.preco_atual) }}</span>
             ({{ a.condicao === 'menor' ? '<' : '>' }} {{ formatPrice(a.preco_alvo) }})
@@ -50,10 +50,15 @@ const AlertasTab = {
         </div>
       </div>
 
+      <!-- Verificação em andamento -->
+      <div v-if="verificando" class="text-center text-info py-3 mb-3">
+        <i class="fa-solid fa-spinner fa-spin me-1"></i> Verificando preços atuais...
+      </div>
+
       <!-- Lista de Alertas -->
       <div v-if="alertas.length">
         <div v-for="a in alertas" :key="a.id"
-             class="d-flex justify-content-between align-items-center glass-card p-3 mb-2 alert-list-item">
+             class="d-flex flex-wrap justify-content-between align-items-center gap-2 glass-card p-3 mb-2 alert-list-item">
           <div>
             <span class="text-white fw-semibold">{{ a.produto }}</span>
             <span class="text-secondary ms-2">
@@ -78,41 +83,68 @@ const AlertasTab = {
       atingidos: [],
       novo: { produto: '', preco_alvo: null, condicao: 'menor' },
       loading: false,
+      verificando: false,
       criando: false,
       deletando: null,
     };
   },
 
   methods: {
-    async carregar() {
+    carregar() {
       this.loading = true;
-      const [a, v] = await Promise.all([
-        fetchJSON(`${API_BASE}/alertas`),
-        fetchJSON(`${API_BASE}/alertas/verificar`),
-      ]);
-      this.alertas = a?.alertas || [];
-      this.atingidos = v?.atingidos || [];
+      this.alertas = UserStore.listarAlertas();
       this.loading = false;
     },
 
-    async criar() {
+    criar() {
       if (!this.novo.produto || !this.novo.preco_alvo) return;
       this.criando = true;
-      await fetch(`${API_BASE}/alertas`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(this.novo),
-      });
+      UserStore.criarAlerta(this.novo.produto, this.novo.preco_alvo, this.novo.condicao);
       this.novo = { produto: '', preco_alvo: null, condicao: 'menor' };
       this.criando = false;
       this.carregar();
     },
 
-    async deletar(id) {
+    deletar(id) {
       this.deletando = id;
-      await fetch(`${API_BASE}/alertas/${id}`, { method: 'DELETE' });
+      UserStore.removerAlerta(id);
       this.deletando = null;
       this.carregar();
+    },
+
+    async verificarAlertas() {
+      const ativos = this.alertas.filter(a => a.ativo);
+      if (!ativos.length) { this.atingidos = []; return; }
+
+      this.verificando = true;
+      this.atingidos = [];
+
+      for (const alerta of ativos) {
+        try {
+          const data = await fetchJSON(
+            `${API_BASE}/buscar?produto=${encodeURIComponent(alerta.produto)}&limite=1`
+          );
+          const resultado = data?.resultados?.[0];
+          if (!resultado || resultado.preco == null) continue;
+
+          const precoAtual = resultado.preco;
+          const disparou =
+            (alerta.condicao === 'menor' && precoAtual <= alerta.preco_alvo) ||
+            (alerta.condicao === 'maior' && precoAtual >= alerta.preco_alvo);
+
+          if (disparou) {
+            this.atingidos.push({
+              ...alerta,
+              preco_atual: precoAtual,
+              fonte: resultado.fonte || '',
+            });
+          }
+        } catch (e) {
+          console.warn('[Alertas] Falha ao verificar:', alerta.produto, e);
+        }
+      }
+
+      this.verificando = false;
     },
 
     formatPrice,
@@ -120,5 +152,6 @@ const AlertasTab = {
 
   mounted() {
     this.carregar();
+    this.verificarAlertas();
   },
 };

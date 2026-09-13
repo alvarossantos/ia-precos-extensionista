@@ -170,6 +170,7 @@ const BuscarTab = {
         this.stats = data.estatisticas || null;
         this.fontesList = Object.keys(data.por_fonte || {});
         if (!this.resultados.length) this.erro = null;
+        UserStore.salvarBusca(this.query);
       }
 
       this.loading = false;
@@ -191,20 +192,11 @@ const BuscarTab = {
       this.alertaFeedback = null;
 
       try {
-        const r = await fetch(`${API_BASE}/alertas`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.alertaForm),
-        });
-        const data = await r.json();
-        if (r.ok) {
-          this.alertaFeedback = { ok: true, msg: 'Alerta criado!' };
-          setTimeout(() => { this.alertaAberto = null; this.alertaFeedback = null; }, 1500);
-        } else {
-          this.alertaFeedback = { ok: false, msg: data.erro || 'Erro ao criar alerta.' };
-        }
+        UserStore.criarAlerta(this.alertaForm.produto, this.alertaForm.preco_alvo, this.alertaForm.condicao);
+        this.alertaFeedback = { ok: true, msg: 'Alerta criado!' };
+        setTimeout(() => { this.alertaAberto = null; this.alertaFeedback = null; }, 1500);
       } catch (e) {
-        this.alertaFeedback = { ok: false, msg: 'Falha na conexão.' };
+        this.alertaFeedback = { ok: false, msg: 'Falha ao salvar alerta.' };
       }
 
       this.alertaCriando = false;

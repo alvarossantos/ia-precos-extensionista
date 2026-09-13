@@ -321,6 +321,7 @@ const DashboardTab = {
           this.currentPrice = formatPrice(h.preco_atual);
           const v = h.variacao_24h || 0;
           this.priceChange = `${v >= 0 ? '+' : ''}${v.toFixed(2)}% (24h)`;
+          if (this.modo === 'comum') UserStore.salvarBusca(produto);
           this.$nextTick(() => this.renderChart(h.historico, { menor_valor: h.menor_valor, maior_valor: h.maior_valor }));
         } else {
           this.currentPrice = 'Erro';

@@ -5,11 +5,11 @@ const { createRouter, createWebHashHistory } = VueRouter;
 /* ---------- Router ---------- */
 const routes = [
   { path: '/', redirect: '/dashboard' },
-  { path: '/dashboard', component: DashboardTab, meta: { tab: 'dashboard', icon: 'fa-chart-line', label: 'Dashboard' } },
-  { path: '/buscar', component: BuscarTab, meta: { tab: 'buscar', icon: 'fa-magnifying-glass', label: 'Buscar Produtos' } },
-  { path: '/comparar', component: CompararTab, meta: { tab: 'comparar', icon: 'fa-scale-balanced', label: 'Comparar' } },
-  { path: '/alertas', component: AlertasTab, meta: { tab: 'alertas', icon: 'fa-bell', label: 'Alertas' } },
-  { path: '/historico', component: HistoricoTab, meta: { tab: 'historico', icon: 'fa-clock-rotate-left', label: 'Histórico' } },
+  { path: '/dashboard', component: DashboardTab, meta: { tab: 'dashboard', icon: 'fa-chart-line', label: 'Dashboard', mobileLabel: 'Home' } },
+  { path: '/buscar', component: BuscarTab, meta: { tab: 'buscar', icon: 'fa-magnifying-glass', label: 'Buscar Produtos', mobileLabel: 'Buscar' } },
+  { path: '/comparar', component: CompararTab, meta: { tab: 'comparar', icon: 'fa-scale-balanced', label: 'Comparar', mobileLabel: 'Comparar' } },
+  { path: '/alertas', component: AlertasTab, meta: { tab: 'alertas', icon: 'fa-bell', label: 'Alertas', mobileLabel: 'Alertas' } },
+  { path: '/historico', component: HistoricoTab, meta: { tab: 'historico', icon: 'fa-clock-rotate-left', label: 'Histórico', mobileLabel: 'Histórico' } },
 ];
 
 const router = createRouter({ history: createWebHashHistory(), routes });
@@ -33,7 +33,7 @@ const AppShell = {
         </div>
       </nav>
 
-      <div class="container">
+      <div class="container main-content">
         <!-- Header -->
         <div class="row mb-4">
           <div class="col-12 text-center text-md-start">
@@ -42,8 +42,8 @@ const AppShell = {
           </div>
         </div>
 
-        <!-- Tabs -->
-        <ul class="nav nav-pills glass-card p-2 mb-4 justify-content-center">
+        <!-- Tabs (desktop only) -->
+        <ul class="nav nav-pills glass-card p-2 mb-4 justify-content-center desktop-tabs">
           <li class="nav-item" v-for="r in tabRoutes" :key="r.path">
             <router-link :to="r.path" class="nav-link" active-class="active">
               <i :class="'fa-solid ' + r.meta.icon + ' me-1'"></i> {{ r.meta.label }}
@@ -54,11 +54,20 @@ const AppShell = {
         <!-- Route view -->
         <router-view></router-view>
 
-        <!-- Footer -->
-        <footer class="mt-5 text-center text-secondary py-3 border-top border-secondary border-opacity-25">
+        <!-- Footer (desktop) -->
+        <footer class="mt-5 text-center text-secondary py-3 border-top border-secondary border-opacity-25 desktop-footer">
           <small>PreçoCerto — Atividade Extensionista (UEMG Passos). Dados via Binance API e lojas brasileiras.</small>
         </footer>
       </div>
+
+      <!-- Mobile Bottom Nav -->
+      <nav class="mobile-bottom-nav">
+        <router-link v-for="r in tabRoutes" :key="r.path" :to="r.path"
+                     class="mobile-nav-item" :class="{ active: $route.path === r.path }">
+          <i :class="'fa-solid ' + r.meta.icon"></i>
+          <span>{{ r.meta.mobileLabel || r.meta.label }}</span>
+        </router-link>
+      </nav>
     </div>
   `,
 

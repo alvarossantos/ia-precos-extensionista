@@ -607,3 +607,94 @@ html, body {
 [data-bs-theme="light"] .progress {
     background-color: rgba(0,0,0,0.08);
 }
+
+/* ==================== MOBILE BOTTOM NAV ==================== */
+
+/* Desktop: esconde bottom nav, mostra tabs e footer */
+.mobile-bottom-nav { display: none; }
+.desktop-tabs { display: flex !important; }
+.desktop-footer { display: block; }
+
+/* Mobile: mostra bottom nav, esconde tabs e footer, padding no conteúdo */
+@media (max-width: 767.98px) {
+    .desktop-tabs { display: none !important; }
+    .desktop-footer { display: none; }
+
+    .main-content {
+        padding-bottom: 70px;
+    }
+
+    .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1040;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 0.35rem 0;
+        padding-bottom: max(0.35rem, env(safe-area-inset-bottom));
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    .mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.15rem;
+        text-decoration: none;
+        color: var(--text-muted);
+        font-size: 0.65rem;
+        padding: 0.3rem 0.5rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+        min-width: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .mobile-nav-item i {
+        font-size: 1.15rem;
+        transition: transform 0.2s ease;
+    }
+
+    .mobile-nav-item.active {
+        color: var(--primary-color);
+    }
+
+    .mobile-nav-item.active i {
+        transform: scale(1.15);
+    }
+
+    .mobile-nav-item span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    /* Light mode bottom nav */
+    [data-bs-theme="light"] .mobile-bottom-nav {
+        background: rgba(255, 255, 255, 0.85);
+        border-top-color: rgba(0, 0, 0, 0.08);
+    }
+
+    [data-bs-theme="light"] .mobile-nav-item {
+        color: var(--text-muted);
+    }
+
+    [data-bs-theme="light"] .mobile-nav-item.active {
+        color: var(--primary-color);
+    }
+
+    /* Header compacto em mobile */
+    .main-content > .row:first-child h1 {
+        font-size: 1.3rem;
+    }
+    .main-content > .row:first-child p {
+        font-size: 0.85rem;
+    }
+}

@@ -22,13 +22,10 @@ const AppShell = {
       <nav class="navbar navbar-expand-lg glass-nav mb-4">
         <div class="container">
           <a class="navbar-brand d-flex align-items-center fw-bold" href="#/dashboard">
-            <i class="fa-solid fa-brain text-primary me-2 fs-3"></i>
+            <i class="fa-solid fa-tag text-primary me-2 fs-3"></i>
             <span class="gradient-text">PreçoCerto</span>
           </a>
           <div class="d-flex align-items-center gap-3">
-            <span class="badge bg-primary-subtle text-primary border border-primary rounded-pill px-3 py-2">
-              <i class="fa-solid fa-circle-nodes me-1"></i> Ativo
-            </span>
             <button class="btn btn-sm btn-outline-secondary" @click="toggleTheme" :title="isDark ? 'Modo claro' : 'Modo escuro'">
               <i :class="isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon'"></i>
             </button>

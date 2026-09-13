@@ -19,56 +19,76 @@ def _is_postgres() -> bool:
 
 
 if _is_postgres():
-    import psycopg
+    # Render exige sslmode=require
+    if "sslmode=" not in DATABASE_URL:
+        DATABASE_URL += "?sslmode=require"
 
-    @contextmanager
-    def conexao(db_path: str = None):
-        """Conexão PostgreSQL (ignora db_path)."""
-        conn = psycopg.connect(DATABASE_URL)
-        try:
-            yield conn
-            conn.commit()
-        except Exception:
-            conn.rollback()
-            raise
-        finally:
-            conn.close()
+    try:
+        import psycopg
 
-    def criar_tabelas():
-        """Cria as tabelas necessárias no PostgreSQL."""
-        with conexao() as conn:
-            cur = conn.cursor()
+        @contextmanager
+        def conexao(db_path: str = None):
+            conn = psycopg.connect(DATABASE_URL)
+            try:
+                yield conn
+                conn.commit()
+            except Exception:
+                conn.rollback()
+                raise
+            finally:
+                conn.close()
 
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS busca_cache (
-                    produto_id TEXT PRIMARY KEY,
-                    fonte TEXT,
-                    ultima_busca_em TEXT NOT NULL
-                )
-            """)
-            cur.execute("""
-                CREATE INDEX IF NOT EXISTS idx_busca_cache_data
-                ON busca_cache (ultima_busca_em DESC)
-            """)
+        def criar_tabelas():
+            try:
+                with conexao() as conn:
+                    cur = conn.cursor()
+                    cur.execute("""
+                        CREATE TABLE IF NOT EXISTS busca_cache (
+                            produto_id TEXT PRIMARY KEY,
+                            fonte TEXT,
+                            ultima_busca_em TEXT NOT NULL
+                        )
+                    """)
+                    cur.execute("""
+                        CREATE INDEX IF NOT EXISTS idx_busca_cache_data
+                        ON busca_cache (ultima_busca_em DESC)
+                    """)
+                    cur.execute("""
+                        CREATE TABLE IF NOT EXISTS preco_snapshot (
+                            id SERIAL PRIMARY KEY,
+                            produto TEXT NOT NULL,
+                            nome_encontrado TEXT,
+                            preco REAL NOT NULL,
+                            moeda TEXT DEFAULT 'BRL',
+                            fonte TEXT,
+                            coletado_em TEXT NOT NULL
+                        )
+                    """)
+                    cur.execute("""
+                        CREATE INDEX IF NOT EXISTS idx_preco_snapshot_produto_data
+                        ON preco_snapshot (produto, coletado_em)
+                    """)
+                    conn.commit()
+                logger.info("Tabelas PostgreSQL criadas/verificadas")
+            except Exception as e:
+                logger.error("Falha ao criar tabelas PostgreSQL: %s", e)
 
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS preco_snapshot (
-                    id SERIAL PRIMARY KEY,
-                    produto TEXT NOT NULL,
-                    nome_encontrado TEXT,
-                    preco REAL NOT NULL,
-                    moeda TEXT DEFAULT 'BRL',
-                    fonte TEXT,
-                    coletado_em TEXT NOT NULL
-                )
-            """)
-            cur.execute("""
-                CREATE INDEX IF NOT EXISTS idx_preco_snapshot_produto_data
-                ON preco_snapshot (produto, coletado_em)
-            """)
+    except ImportError:
+        logger.warning("psycopg não instalado — usando SQLite como fallback")
 
-            conn.commit()
-        logger.info("Tabelas PostgreSQL criadas/verificadas")
+        @contextmanager
+        def conexao(db_path: str):
+            conn = sqlite3.connect(db_path, timeout=10)
+            conn.execute("PRAGMA journal_mode=WAL")
+            conn.execute("PRAGMA foreign_keys=ON")
+            try:
+                yield conn
+                conn.commit()
+            finally:
+                conn.close()
+
+        def criar_tabelas():
+            pass
 
 else:
     # SQLite local (desenvolvimento)
@@ -84,4 +104,4 @@ else:
             conn.close()
 
     def criar_tabelas():
-        pass  # SQLite cria tabelas via _criar_tabela() nos repos
+        pass

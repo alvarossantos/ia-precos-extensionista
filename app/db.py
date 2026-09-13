@@ -1,7 +1,7 @@
 """Helper de conexão com banco de dados.
 
 Suporta PostgreSQL (via DATABASE_URL, para Render) e SQLite (local).
-Em produção (Render), usa psycopg2. Em desenvolvimento, usa SQLite com WAL.
+Em produção (Render), usa psycopg (v3). Em desenvolvimento, usa SQLite com WAL.
 """
 
 import logging
@@ -19,18 +19,12 @@ def _is_postgres() -> bool:
 
 
 if _is_postgres():
-    # Render fornece DATABASE_URL com sslmode=require
-    if "sslmode=" not in DATABASE_URL:
-        DATABASE_URL += "?sslmode=require"
-
-    import psycopg2
-    import psycopg2.extras
+    import psycopg
 
     @contextmanager
     def conexao(db_path: str = None):
         """Conexão PostgreSQL (ignora db_path)."""
-        conn = psycopg2.connect(DATABASE_URL)
-        conn.autocommit = False
+        conn = psycopg.connect(DATABASE_URL)
         try:
             yield conn
             conn.commit()

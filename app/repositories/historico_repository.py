@@ -1,15 +1,16 @@
-"""Guarda, em SQLite, cada snapshot de preço coletado de verdade para
-produtos comuns. Como as fontes não fornecem histórico retroativo, o
-histórico é construído aos poucos: cada vez que o cache decide que é
-preciso buscar de novo, o novo preço vira mais um ponto na série.
+"""Guarda snapshots de preço coletados de fontes externas.
+
+Suporta PostgreSQL (produção/Render) e SQLite (desenvolvimento local).
 """
 
 import logging
 from datetime import datetime, timedelta
 
-from ..db import conexao
+from ..db import conexao, _is_postgres
 
 logger = logging.getLogger(__name__)
+
+PH = "%s" if _is_postgres() else "?"
 
 
 class HistoricoRepository:
@@ -20,9 +21,9 @@ class HistoricoRepository:
     def _criar_tabela(self):
         with conexao(self.db_path) as conn:
             conn.execute(
-                """
+                f"""
                 CREATE TABLE IF NOT EXISTS preco_snapshot (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id {'SERIAL PRIMARY KEY' if _is_postgres() else 'INTEGER PRIMARY KEY AUTOINCREMENT'},
                     produto TEXT NOT NULL,
                     nome_encontrado TEXT,
                     preco REAL NOT NULL,
@@ -32,7 +33,6 @@ class HistoricoRepository:
                 )
                 """
             )
-            # Índice: toda leitura filtra por produto e ordena por data.
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_preco_snapshot_produto_data "
                 "ON preco_snapshot (produto, coletado_em)"
@@ -42,34 +42,31 @@ class HistoricoRepository:
                       moeda: str = "BRL", fonte: str = "multi"):
         with conexao(self.db_path) as conn:
             conn.execute(
-                """
+                f"""
                 INSERT INTO preco_snapshot (produto, nome_encontrado, preco, moeda, fonte, coletado_em)
-                VALUES (?, ?, ?, ?, ?, ?)
+                VALUES ({PH}, {PH}, {PH}, {PH}, {PH}, {PH})
                 """,
                 (produto, nome_encontrado, preco, moeda, fonte, datetime.now().isoformat()),
             )
         logger.info("Preço salvo: produto=%s preco=%s fonte=%s", produto, preco, fonte)
 
     def buscar_historico(self, produto: str, dias: int = None):
-        """Retorna a série de preços já coletados, no formato
-        [{'time': 'dd/mm HH:MM', 'close': preco}, ...], ordenado por data.
-        """
         with conexao(self.db_path) as conn:
             if dias:
                 data_inicio = (datetime.now() - timedelta(days=dias)).isoformat()
                 cursor = conn.execute(
-                    """
+                    f"""
                     SELECT preco, coletado_em FROM preco_snapshot
-                    WHERE produto = ? AND coletado_em >= ?
+                    WHERE produto = {PH} AND coletado_em >= {PH}
                     ORDER BY coletado_em ASC
                     """,
                     (produto, data_inicio),
                 )
             else:
                 cursor = conn.execute(
-                    """
+                    f"""
                     SELECT preco, coletado_em FROM preco_snapshot
-                    WHERE produto = ?
+                    WHERE produto = {PH}
                     ORDER BY coletado_em ASC
                     """,
                     (produto,),

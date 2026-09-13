@@ -13,6 +13,7 @@ from flask import Flask
 from flask_cors import CORS
 
 from .config import config
+from .db import criar_tabelas
 from .extensions import configurar_logging, limiter
 from .routes import registrar_rotas
 
@@ -31,6 +32,7 @@ def create_app() -> Flask:
 
     limiter.init_app(app)
 
+    criar_tabelas()
     registrar_rotas(app)
 
     logger.info("Aplicação criada (debug=%s, cors_origins=%s)", config.DEBUG, origins)

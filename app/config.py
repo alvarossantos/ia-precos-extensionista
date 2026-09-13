@@ -26,14 +26,12 @@ class Config:
     PORT = int(os.getenv("FLASK_PORT", "5000"))
     CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*")
 
-    # ---- Bancos locais (SQLite) ----
-    # Nota: o desenho original do projeto previa Postgres para o schema
-    # fonte/produto/preco_historico/previsao. Este backend de
-    # desenvolvimento usa SQLite (cache, histórico local e alertas) por
-    # simplicidade — ver README, seção "Limitações conhecidas".
+    # ---- Banco de Dados ----
+    # Render: DATABASE_URL (PostgreSQL) — preenchido automaticamente
+    # Local: SQLite (arquivos locais)
+    DATABASE_URL = os.getenv("DATABASE_URL", "")
     CACHE_DB_PATH = os.getenv("CACHE_DB_PATH", "cache.db")
     HISTORICO_DB_PATH = os.getenv("HISTORICO_DB_PATH", "historico_local.db")
-    ALERTAS_DB_PATH = os.getenv("ALERTAS_DB_PATH", "alertas.db")
 
     # ---- Cache / TTL ----
     CACHE_TTL_HORAS = int(os.getenv("CACHE_TTL_HORAS", "6"))

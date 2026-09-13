@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: precocerto
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:create_app() --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    envVars:
+      - key: FLASK_DEBUG
+        value: "false"
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SERPAPI_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: "openrouter/free"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: precocerto-db
+          property: connectionString
+      - key: CACHE_TTL_HORAS
+        value: "6"
+      - key: HTTP_TIMEOUT
+        value: "15"
+
+  - type: postgresql
+    name: precocerto-db
+    plan: free
+    databaseName: precocerto
+    ipAllowList: []

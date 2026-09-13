@@ -3,6 +3,8 @@ flask-cors==4.0.1
 Flask-Limiter==3.8.0
 python-dotenv==1.0.1
 requests==2.32.3
+gunicorn==22.0.0
+psycopg2-binary==2.9.9
 
 # Dev / testes
 pytest==8.3.3

@@ -1,33 +1,19 @@
-"""Camada de cache (recall) para o sistema de previsão de preços.
+"""Camada de cache para o sistema de previsão de preços.
 
-Antes de buscar/scrapear um produto numa fonte externa (Mercado
-Livre, Amazon, Binance, etc.), verifica no SQLite se esse produto já
-foi buscado recentemente. Se sim, evita nova busca externa e
-reaproveita o histórico já salvo.
-
-Uso típico (camada de serviço):
-
-    cache = CacheRepository()
-    if cache.deve_buscar("produto_123", ttl_horas=24):
-        dados = buscador_externo.buscar("produto_123")
-        historico_repo.salvar(dados)
-        cache.registrar_busca("produto_123")
-    else:
-        dados = historico_repo.buscar_ultimo("produto_123")
+Suporta PostgreSQL (produção/Render) e SQLite (desenvolvimento local).
 """
 
 import logging
 from datetime import datetime, timedelta
 
-from ..db import conexao
+from ..db import conexao, _is_postgres
 
 logger = logging.getLogger(__name__)
 
+PH = "%s" if _is_postgres() else "?"
+
 
 class CacheRepository:
-    """Responsável apenas pelo controle de 'quando foi buscado'.
-    Não guarda preços — isso é responsabilidade do HistoricoRepository."""
-
     def __init__(self, db_path: str = "cache.db"):
         self.db_path = db_path
         self._criar_tabela()
@@ -35,7 +21,7 @@ class CacheRepository:
     def _criar_tabela(self):
         with conexao(self.db_path) as conn:
             conn.execute(
-                """
+                f"""
                 CREATE TABLE IF NOT EXISTS busca_cache (
                     produto_id TEXT PRIMARY KEY,
                     fonte TEXT,
@@ -49,11 +35,9 @@ class CacheRepository:
             )
 
     def deve_buscar(self, produto_id: str, ttl_horas: int = 24) -> bool:
-        """True se o produto nunca foi buscado, ou se a última busca
-        está fora do prazo de validade (ttl_horas)."""
         with conexao(self.db_path) as conn:
             row = conn.execute(
-                "SELECT ultima_busca_em FROM busca_cache WHERE produto_id = ?",
+                f"SELECT ultima_busca_em FROM busca_cache WHERE produto_id = {PH}",
                 (produto_id,),
             ).fetchone()
 
@@ -67,12 +51,12 @@ class CacheRepository:
         agora = datetime.now().isoformat()
         with conexao(self.db_path) as conn:
             conn.execute(
-                """
+                f"""
                 INSERT INTO busca_cache (produto_id, fonte, ultima_busca_em)
-                VALUES (?, ?, ?)
+                VALUES ({PH}, {PH}, {PH})
                 ON CONFLICT(produto_id) DO UPDATE SET
-                    ultima_busca_em = excluded.ultima_busca_em,
-                    fonte = excluded.fonte
+                    ultima_busca_em = EXCLUDED.ultima_busca_em,
+                    fonte = EXCLUDED.fonte
                 """,
                 (produto_id, fonte, agora),
             )
@@ -81,18 +65,17 @@ class CacheRepository:
     def ultima_busca(self, produto_id: str):
         with conexao(self.db_path) as conn:
             row = conn.execute(
-                "SELECT ultima_busca_em FROM busca_cache WHERE produto_id = ?",
+                f"SELECT ultima_busca_em FROM busca_cache WHERE produto_id = {PH}",
                 (produto_id,),
             ).fetchone()
         return datetime.fromisoformat(row[0]) if row else None
 
     def listar_recentes(self, limite: int = 20):
-        """Últimas buscas registradas — usado por /api/historico-buscas."""
         limite = max(1, min(limite, 100))
         with conexao(self.db_path) as conn:
             rows = conn.execute(
-                "SELECT produto_id, fonte, ultima_busca_em FROM busca_cache "
-                "ORDER BY ultima_busca_em DESC LIMIT ?",
+                f"SELECT produto_id, fonte, ultima_busca_em FROM busca_cache "
+                f"ORDER BY ultima_busca_em DESC LIMIT {PH}",
                 (limite,),
             ).fetchall()
         return [

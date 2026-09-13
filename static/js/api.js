@@ -4,9 +4,15 @@ const API_BASE = `${window.location.origin}/api`;
 const fetchJSON = async (url) => {
   try {
     const r = await fetch(url);
-    if (!r.ok) return null;
+    if (!r.ok) {
+      console.warn('[API]', r.status, r.statusText, url);
+      return null;
+    }
     return await r.json();
-  } catch { return null; }
+  } catch (e) {
+    console.error('[API] fetch falhou:', url, e.message);
+    return null;
+  }
 };
 
 const formatPrice = (price) => {

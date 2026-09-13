@@ -31,10 +31,15 @@ const DashboardTab = {
                 <div class="input-group">
                   <input type="text" v-model="produtoInput" class="form-control bg-dark text-white border-secondary"
                          placeholder="Ex: iPhone 15, PS5, Notebook Dell..."
-                         @keydown.enter="updateDashboard">
-                  <button class="btn btn-primary" @click="updateDashboard" type="button">
-                    <i class="fa-solid fa-magnifying-glass"></i>
+                         @keydown.enter="updateDashboard"
+                         :disabled="loading">
+                  <button class="btn btn-primary" @click="updateDashboard" type="button" :disabled="loading">
+                    <i v-if="loading" class="fa-solid fa-spinner fa-spin"></i>
+                    <i v-else class="fa-solid fa-magnifying-glass"></i>
                   </button>
+                </div>
+                <div v-if="errorMsg" class="alert alert-danger mt-2 mb-0 py-2" style="font-size:0.85rem;">
+                  <i class="fa-solid fa-circle-exclamation me-1"></i>{{ errorMsg }}
                 </div>
               </div>
 
@@ -113,8 +118,9 @@ const DashboardTab = {
                   <option :value="180">6 meses</option>
                   <option :value="365">1 ano</option>
                 </select>
-                <button class="btn btn-sm btn-outline-primary" @click="updateDashboard">
-                  <i class="fa-solid fa-rotate-right me-1"></i>Atualizar
+                <button class="btn btn-sm btn-outline-primary" @click="updateDashboard" :disabled="loading">
+                  <i v-if="loading" class="fa-solid fa-spinner fa-spin me-1"></i>
+                  <i v-else class="fa-solid fa-rotate-right me-1"></i>{{ loading ? 'Carregando...' : 'Atualizar' }}
                 </button>
               </div>
             </div>
@@ -231,7 +237,9 @@ const DashboardTab = {
       historico: null,
       previsao: {},
       analise: null,
+      loading: false,
       loadingIa: false,
+      errorMsg: '',
       priceChart: null,
     };
   },
@@ -295,23 +303,40 @@ const DashboardTab = {
       const produto = this.currentProduto;
       if (this.modo === 'comum' && !produto) return;
 
-      const [h, p] = await Promise.all([
-        fetchJSON(`${API_BASE}/historico?produto=${encodeURIComponent(produto)}&tipo=${this.modo}&periodo=${this.periodo}`),
-        fetchJSON(`${API_BASE}/previsao?produto=${encodeURIComponent(produto)}&tipo=${this.modo}&periodo=${this.periodo}`),
-      ]);
+      this.loading = true;
+      this.errorMsg = '';
+      console.log('[Dashboard] updateDashboard:', { produto, modo: this.modo, periodo: this.periodo });
 
-      if (h) {
-        this.historico = h;
-        this.currentPrice = formatPrice(h.preco_atual);
-        const v = h.variacao_24h || 0;
-        this.priceChange = `${v >= 0 ? '+' : ''}${v.toFixed(2)}% (24h)`;
-        this.$nextTick(() => this.renderChart(h.historico, { menor_valor: h.menor_valor, maior_valor: h.maior_valor }));
-      } else {
+      try {
+        const [h, p] = await Promise.all([
+          fetchJSON(`${API_BASE}/historico?produto=${encodeURIComponent(produto)}&tipo=${this.modo}&periodo=${this.periodo}`),
+          fetchJSON(`${API_BASE}/previsao?produto=${encodeURIComponent(produto)}&tipo=${this.modo}&periodo=${this.periodo}`),
+        ]);
+
+        console.log('[Dashboard] historico:', h ? `${h.resultados?.length || 0} resultados` : 'NULL');
+        console.log('[Dashboard] previsao:', p ? p.tendencia : 'NULL');
+
+        if (h && !h.erro) {
+          this.historico = h;
+          this.currentPrice = formatPrice(h.preco_atual);
+          const v = h.variacao_24h || 0;
+          this.priceChange = `${v >= 0 ? '+' : ''}${v.toFixed(2)}% (24h)`;
+          this.$nextTick(() => this.renderChart(h.historico, { menor_valor: h.menor_valor, maior_valor: h.maior_valor }));
+        } else {
+          this.currentPrice = 'Erro';
+          this.priceChange = h?.erro || 'Tente novamente';
+          this.errorMsg = h?.erro || 'Nenhum resultado encontrado para este produto.';
+        }
+
+        this.previsao = p || {};
+      } catch (e) {
+        console.error('[Dashboard] Erro inesperado:', e);
         this.currentPrice = 'Erro';
-        this.priceChange = 'Tente novamente';
+        this.priceChange = 'Falha na requisição';
+        this.errorMsg = 'Erro de conexão. Verifique o console (F12).';
+      } finally {
+        this.loading = false;
       }
-
-      this.previsao = p || {};
     },
 
     renderChart(data, extremos = {}) {

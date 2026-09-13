@@ -218,7 +218,7 @@ const DashboardTab = {
 
   data() {
     return {
-      modo: 'comum',
+      modo: 'cripto',
       asset: 'BTCUSDT',
       assets: [
         { value: 'BTCUSDT', label: 'Bitcoin (BTC)' },

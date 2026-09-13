@@ -99,7 +99,31 @@ const AppShell = {
     if (saved) {
       document.documentElement.setAttribute('data-bs-theme', saved);
       this.isDark = saved === 'dark';
+    } else {
+      /* Seguir tema do sistema operacional */
+      const mq = window.matchMedia('(prefers-color-scheme: light)');
+      const sysTheme = mq.matches ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-bs-theme', sysTheme);
+      this.isDark = sysTheme === 'dark';
+      /* Atualizar em tempo real se o usuário mudar o tema do OS */
+      mq.addEventListener('change', (e) => {
+        if (!localStorage.getItem('precocerto-theme')) {
+          const t = e.matches ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-bs-theme', t);
+          this.isDark = t === 'dark';
+        }
+      });
     }
+
+    /* Detectar sistema operacional e aplicar classe no <html> */
+    const ua = navigator.userAgent || '';
+    let os = 'desktop';
+    if (/iPhone|iPad|iPod/.test(ua)) os = 'ios';
+    else if (/Android/.test(ua)) os = 'android';
+    else if (/Mac/.test(ua)) os = 'macos';
+    else if (/Win/.test(ua)) os = 'windows';
+    else if (/Linux/.test(ua)) os = 'linux';
+    document.documentElement.classList.add('os-' + os);
   },
 };
 

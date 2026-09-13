@@ -651,6 +651,164 @@ html, body {
 .desktop-tabs { display: flex !important; }
 .desktop-footer { display: block; }
 
+/* ==================== ESTILOS NATIVOS POR OS ==================== */
+
+/* --- iOS: estilo SF / Apple Human Interface --- */
+.os-ios select.form-select {
+    border-radius: 10px;
+    font-size: 17px; /* evita zoom automático no iOS */
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+.os-ios .product-card {
+    border-radius: 14px;
+    transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.os-ios .product-card:active {
+    transform: scale(0.97);
+}
+
+.os-ios .glass-card {
+    border-radius: 16px;
+}
+
+.os-ios .nav-pills .nav-link.active {
+    border-radius: 20px;
+}
+
+.os-ios .mobile-bottom-nav {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 0.5px solid rgba(0, 0, 0, 0.1);
+}
+
+.os-ios[data-bs-theme="dark"] .mobile-bottom-nav {
+    background: rgba(28, 28, 30, 0.72);
+    border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.os-ios .btn {
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.os-ios .alerta-card {
+    border-radius: 12px;
+}
+
+.os-ios .theme-toggle {
+    border-radius: 14px;
+}
+
+/* --- Android: Material Design 3 --- */
+.os-android select.form-select {
+    border-radius: 12px;
+    font-size: 16px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%2394a3b8' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 36px;
+}
+
+.os-android .product-card {
+    border-radius: 12px;
+    transition: box-shadow 0.2s ease;
+}
+
+.os-android .product-card:active {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.os-android .glass-card {
+    border-radius: 16px;
+}
+
+.os-android .nav-pills .nav-link.active {
+    border-radius: 16px;
+}
+
+.os-android .mobile-bottom-nav {
+    background: rgba(255, 255, 255, 0.85);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.os-android[data-bs-theme="dark"] .mobile-bottom-nav {
+    background: rgba(30, 30, 30, 0.9);
+    border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+.os-android .btn {
+    border-radius: 20px;
+    text-transform: none;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+.os-android .alerta-card {
+    border-radius: 12px;
+}
+
+.os-android .theme-toggle {
+    border-radius: 16px;
+}
+
+/* --- macOS: vibrancy style --- */
+.os-macos select.form-select {
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.os-macos .glass-card {
+    border-radius: 10px;
+}
+
+.os-macos .nav-pills .nav-link.active {
+    border-radius: 8px;
+}
+
+.os-macos .btn {
+    border-radius: 6px;
+}
+
+/* --- Windows: Fluent Design --- */
+.os-windows select.form-select {
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.os-windows .glass-card {
+    border-radius: 8px;
+}
+
+.os-windows .nav-pills .nav-link.active {
+    border-radius: 6px;
+}
+
+.os-windows .btn {
+    border-radius: 4px;
+}
+
+/* --- Linux: minimal --- */
+.os-linux select.form-select {
+    border-radius: 4px;
+}
+
+.os-linux .glass-card {
+    border-radius: 8px;
+}
+
+.os-linux .btn {
+    border-radius: 4px;
+}
+
 /* Mobile: mostra bottom nav, esconde tabs e footer, padding no conteúdo */
 @media (max-width: 767.98px) {
     .desktop-tabs { display: none !important; }
@@ -667,10 +825,8 @@ html, body {
         left: 0;
         right: 0;
         z-index: 1040;
-        background: rgba(15, 23, 42, 0.85);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
         padding: 0.35rem 0;
         padding-bottom: max(0.35rem, env(safe-area-inset-bottom));
         justify-content: space-around;

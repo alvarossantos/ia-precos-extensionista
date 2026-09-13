@@ -26,8 +26,8 @@ const AppShell = {
             <span class="gradient-text">PreçoCerto</span>
           </a>
           <div class="d-flex align-items-center gap-3">
-            <button class="btn btn-sm btn-outline-secondary" @click="toggleTheme" :title="isDark ? 'Modo claro' : 'Modo escuro'">
-              <i :class="isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon'"></i>
+            <button class="theme-toggle" @click="toggleTheme" :title="isDark ? 'Modo claro' : 'Modo escuro'">
+              <i class="fa-solid" :class="isDark ? 'fa-sun' : 'fa-moon'"></i>
             </button>
           </div>
         </div>

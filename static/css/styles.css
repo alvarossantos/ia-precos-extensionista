@@ -510,6 +510,42 @@ html, body {
     overflow-x: hidden;
 }
 
+/* Theme Toggle */
+.theme-toggle {
+    width: 44px;
+    height: 26px;
+    border-radius: 13px;
+    border: 2px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--text-main);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+    padding: 0;
+}
+
+.theme-toggle:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 8px var(--primary-glow);
+}
+
+.theme-toggle i {
+    font-size: 0.75rem;
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), color 0.3s ease;
+}
+
+.theme-toggle:active i {
+    transform: scale(0.85);
+}
+
+[data-bs-theme="light"] .theme-toggle {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
 /* Tabs: scroll horizontal em mobile */
 .nav-pills {
     gap: 0.25rem;

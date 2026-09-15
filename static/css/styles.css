@@ -179,9 +179,31 @@ body {
 }
 
 /* Stats grid — prevent overflow in all children */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
 .stats-grid > * {
     min-width: 0;
     overflow: hidden;
+}
+
+.stats-grid .glass-card {
+    overflow: hidden;
+    min-width: 0;
+}
+
+/* Força preço a caber no card */
+.stats-grid .fs-4,
+.stats-grid .fs-5 {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 /* Glass-card with padding — overflow control */
@@ -189,6 +211,34 @@ body {
 .glass-card.p-4 {
     overflow: hidden;
     min-width: 0;
+}
+
+/* Preço dentro do stats sempre cabe */
+.stats-grid .glass-card.p-3 {
+    overflow: hidden;
+    min-width: 0;
+    word-break: break-word;
+}
+
+.stats-grid .glass-card.p-3 .fs-4 {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    font-size: 1.1rem;
+}
+
+@media (max-width: 767.98px) {
+    .stats-grid .glass-card.p-3 .fs-4 {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .stats-grid .glass-card.p-3 .fs-4 {
+        font-size: 0.85rem;
+    }
 }
 
 /* Stats grid inner cards — prevent overflow */
@@ -452,6 +502,20 @@ select.form-select:focus {
     .glass-card.p-4 { padding: 1rem !important; }
     .glass-card.p-3 { padding: 0.6rem !important; }
 
+    .stats-grid { gap: 0.5rem; }
+
+    .stats-grid .fs-4 {
+        font-size: 0.9rem !important;
+    }
+
+    .stats-grid .fs-5 {
+        font-size: 0.8rem !important;
+    }
+
+    .stats-grid small {
+        font-size: 0.65rem !important;
+    }
+
     /* Navbar compacta */
     .navbar .container { gap: 0.5rem; }
     .navbar-brand { font-size: 1rem !important; }
@@ -461,29 +525,8 @@ select.form-select:focus {
     .nav-pills { gap: 0.2rem; padding: 0.25rem !important; }
     .nav-pills .nav-link { padding: 0.4rem 0.6rem; font-size: 0.78rem; }
 
-    /* Dashboard: preço menor, stats 2x2 */
+    /* Dashboard: preço menor */
     .display-4 { font-size: 1.6rem !important; }
-
-    /* Stats grid → 2 colunas */
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-
-    .glass-card.p-3 .fs-4 {
-        font-size: 0.9rem !important;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .glass-card.p-3 .fs-5 {
-        font-size: 0.8rem !important;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .glass-card.p-3 small {
-        font-size: 0.65rem !important;
-    }
 
     /* Dashboard header: empilhar */
     .dashboard-header { flex-direction: column !important; gap: 0.5rem; }
@@ -492,7 +535,7 @@ select.form-select:focus {
     /* Chart header: empilhar */
     .chart-header { flex-direction: column !important; gap: 0.5rem; align-items: flex-start !important; }
 
-    /* Product cards: 1 coluna, thumbnail menor */
+    /* Product cards: thumbnail menor */
     .product-card .product-thumb { width: 48px; height: 48px; }
     .product-card { padding: 0.6rem; }
     .product-card .product-price { font-size: 0.9rem; }
@@ -533,20 +576,12 @@ select.form-select:focus {
 
     .display-4 { font-size: 2rem !important; }
 
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-
-    .glass-card.p-3 .fs-4 {
+    .stats-grid .fs-4 {
         font-size: 1rem !important;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
-    .glass-card.p-3 .fs-5 {
+    .stats-grid .fs-5 {
         font-size: 0.9rem !important;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     .product-card .product-thumb { width: 56px; height: 56px; }
@@ -560,20 +595,12 @@ select.form-select:focus {
     .glass-card.p-4 { padding: 1.25rem !important; }
     .glass-card.p-3 { padding: 0.75rem !important; }
 
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-
-    .glass-card.p-3 .fs-4 {
+    .stats-grid .fs-4 {
         font-size: 1rem !important;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
-    .glass-card.p-3 .fs-5 {
+    .stats-grid .fs-5 {
         font-size: 0.9rem !important;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     .product-card .product-thumb { width: 56px; height: 56px; }

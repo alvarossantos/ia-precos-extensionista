@@ -31,6 +31,10 @@ _FALLBACK_NVIDIA = [
     "nvidia/llama-3.3-70b-instruct",
     "nvidia/llama-3.1-nemotron-70b-instruct",
     "nvidia/llama-3.1-nemotron-mini-4b-instruct",
+    "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "nvidia/nemotron-3-super-120b-a12b",
+    "moonshotai/kimi-k3",
+    "poolside/laguna-xs-2.1",
 ]
 
 _lock = threading.Lock()

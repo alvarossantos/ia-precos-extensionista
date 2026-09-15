@@ -1,160 +1,138 @@
-# Preditor IA — Sistema de Previsão de Tendências de Preços
+# PreçoCerto — Sistema de Análise e Comparação de Preços
 
 Atividade Extensionista — 6º período, Sistemas de Informação, UEMG
-Unidade Acadêmica de Passos. Analisa o histórico de preços de
-criptomoedas e produtos comuns e sugere tendências (alta, queda,
-estabilidade) como apoio à decisão de compra.
-
-Este diretório é uma reorganização do protótipo original
-(`mock_backend.py` + `index.html` + `js/app.js` em arquivos únicos)
-em um backend Flask estruturado em módulos, mais robusto a falhas de
-rede/scraping e com testes automatizados. O comportamento das rotas
-da API foi mantido — quem já integrou com o frontend não precisa
-mudar nada — mas a organização interna e alguns bugs foram corrigidos
-(ver "O que mudou" no fim deste arquivo).
+Unidade Acadêmica de Passos. Compara preços de produtos em múltiplas
+lojas brasileiras e analisa tendências de criptomoedas, oferecendo
+previsões por IA como apoio à decisão de compra.
 
 ## Como rodar
 
 ```bash
 python3 -m venv venv
-source venv/bin/activate          # Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
-
-cp .env.example .env              # opcional — funciona sem editar nada
+cp .env.example .env
 python run.py
 ```
 
-Acesse `http://127.0.0.1:5000`. O Flask serve tanto a API (`/api/...`)
-quanto o frontend estático (`/`) na mesma porta.
+Acesse `http://127.0.0.1:5000`. O Flask serve a API (`/api/...`) e
+o frontend Vue 3 (`/`) na mesma porta.
 
-Para rodar os testes:
+Testes:
 
 ```bash
 pytest -v
 ```
 
+## Deploy no Render
+
+1. Criar conta no [Render](https://render.com)
+2. New → Web Service → conectar repositório GitHub
+3. Build: `pip install -r requirements.txt`
+4. Start: `gunicorn "app:create_app()" --bind 0.0.0.0:$PORT --workers 1 --timeout 120 --preload`
+5. Criar PostgreSQL gratuito (New → PostgreSQL)
+6. Copiar Internal Database URL → Environment → `DATABASE_URL`
+7. Adicionar chaves de API no Environment
+
 ## Arquitetura
 
 ```
-run.py                  # ponto de entrada (python run.py)
+run.py                    # ponto de entrada
 app/
-  __init__.py            # application factory (create_app)
-  config.py               # toda configuração via variáveis de ambiente
-  extensions.py            # logging + rate limiting (Flask-Limiter)
-  http_client.py            # sessão requests com timeout + retry/backoff
-  db.py                      # conexão SQLite (WAL) compartilhada
-  repos.py                    # instâncias únicas dos repositórios
-  repositories/                # acesso a dados (SQLite)
-    cache_repository.py          # "já busquei isso recentemente?"
-    historico_repository.py       # série histórica de preços coletados
-    alertas_repository.py          # CRUD de alertas de preço
-  services/                    # regras de negócio, sem Flask/SQL direto
-    cripto_service.py            # Binance
-    llm_service.py                 # OpenRouter, com fallback entre modelos
-    previsao_service.py             # SMA20/SMA50 + refinamento por IA
-    mercadolivre_oauth.py            # fluxo OAuth do Mercado Livre
+  __init__.py             # application factory (create_app)
+  config.py               # configuração via variáveis de ambiente
+  extensions.py           # logging + rate limiting (Flask-Limiter)
+  http_client.py          # sessão requests com timeout + retry + binance_get()
+  db.py                   # PostgreSQL (DATABASE_URL) ou SQLite (local)
+  repos.py                # singletons dos repositórios
+  repositories/
+    cache_repository.py   # cache de buscas
+    historico_repository.py # série histórica de preços
+  services/
+    cripto_service.py     # Binance + CoinGecko (fallback)
+    llm_service.py        # OpenRouter + NVIDIA NIM (fallback)
+    previsao_service.py   # SMA20/SMA50 + refinamento por IA
     produtos/
-      fontes.py                       # scraping/API de cada loja
-      filtros.py                       # relevância, novos, acessórios, IA
-      ranking.py                        # pontuação e ordenação final
-      aggregator.py                      # junta tudo: pipelines de busca
-  routes/                       # só HTTP: parse de request, chama service,
-                                 # devolve jsonify — 1 blueprint por área
-static/                  # frontend (index.html, css/, js/) — sem mudanças
-                          # de funcionalidade, só correções de segurança
-tests/                    # testes de unidade (funções puras, sem rede)
+      fontes.py           # scraping/API de cada loja
+      filtros.py          # relevância, acessórios, inglês, IA
+      ranking.py          # pontuação com distribuição por fonte
+      aggregator.py       # pipelines de busca paralela
+  routes/
+    pages.py              # serves index.html + /health + /favicon.ico
+    historico_routes.py   # /api/historico
+    previsao_routes.py    # /api/previsao
+    buscar_routes.py      # /api/buscar
+    comparar_routes.py    # /api/comparar
+    analise_ia_routes.py  # /api/analise-ia
+    fontes_routes.py      # /api/fontes
+static/                   # Vue 3 + Vue Router (CDN)
+  index.html
+  favicon.svg
+  css/styles.css
+  js/
+    api.js                # fetchJSON helpers
+    userStore.js          # localStorage (alertas, histórico, buscas)
+    app.js                # Vue app + router + detecção de OS
+    components/
+      DashboardTab.js     # cripto/produto + gráfico + previsão IA
+      BuscarTab.js        # busca multi-fonte + alertas
+      CompararTab.js      # comparação lado a lado
+      AlertasTab.js       # gerenciamento de alertas (localStorage)
+      HistoricoTab.js     # histórico de buscas
+tests/
+  test_filtros.py
+  test_previsao_service.py
+  test_ranking.py
 ```
-
-A regra usada para separar as camadas: **routes** não sabem de SQL
-nem de scraping (só HTTP), **services** não sabem de Flask, e
-**repositories** não sabem de regra de negócio, só de persistência.
-Isso é o que torna `tests/` possível sem subir servidor nem mockar
-rede — `previsao_service`, `filtros` e `ranking` são funções puras
-testadas diretamente.
 
 ## Variáveis de ambiente
 
-Veja `.env.example` para a lista completa e comentada. Nenhuma é
-obrigatória: sem `OPENROUTER_API_KEY`, a previsão cai para o SMA puro
-(sem o texto de IA); sem `SERPAPI_API_KEY`, as fontes Google Shopping
-e Google orgânico simplesmente retornam vazio; sem `ML_CLIENT_ID`, a
-busca no Mercado Livre continua funcionando (usa o endpoint público),
-só sem o limite de uso mais alto do OAuth.
+Veja `.env.example` para a lista completa.
 
 | Variável | Obrigatória | Efeito se ausente |
 |---|---|---|
-| `OPENROUTER_API_KEY` | Não | Previsão/análise sem texto gerado por IA |
-| `SERPAPI_API_KEY` | Não | Google Shopping e Google orgânico ficam vazios |
-| `ML_CLIENT_ID` / `ML_CLIENT_SECRET` | Não | Mercado Livre busca sem OAuth (limites menores) |
-| `CACHE_TTL_HORAS` | Não (padrão 6) | Intervalo mínimo entre buscas externas do mesmo produto |
-| `CORS_ORIGINS` | Não (padrão `*`) | Em produção, defina o domínio real do frontend |
+| `DATABASE_URL` | Produção | Usa SQLite local (desenvolvimento) |
+| `OPENROUTER_API_KEY` | Não | Previsão sem texto IA |
+| `NVIDIA_API_KEY` | Não | Fallback IA indisponível |
+| `SERPAPI_API_KEY` | Não | Google Shopping/orgânico vazios |
+| `CACHE_TTL_HORAS` | Não (6h) | Intervalo entre buscas externas |
 
 ## Fontes de dados
 
-| Fonte | Tipo | Requer chave | Observação |
-|---|---|---|---|
-| Binance | API pública | Não | Cripto |
-| Mercado Livre | API pública | Não | OAuth opcional (limites maiores) |
-| Americanas | API VTEX | Não | |
-| KaBuM! | API interna | Não | |
-| Samsung Store | Intelligent Search API | Não | |
-| Buscapé / Zoom | Scraping (`__NEXT_DATA__`) | Não | **Frágil** — ver limitações |
-| Google Shopping / Google | SerpAPI | Sim (`SERPAPI_API_KEY`) | |
+| Fonte | Tipo | Requer chave |
+|---|---|---|
+| Binance | API pública | Não |
+| CoinGecko | API pública (fallback) | Não |
+| Americanas | API VTEX | Não |
+| Carrefour | API VTEX | Não |
+| KaBuM! | API interna | Não |
+| Samsung Store | Intelligent Search API | Não |
+| Buscapé | Scraping (`__NEXT_DATA__`) | Não |
+| Zoom | Scraping (`__NEXT_DATA__`) | Não |
+| Google Shopping | SerpAPI | Sim |
+| Google orgânico | SerpAPI | Sim |
 
 ## Limitações conhecidas
 
-- **SQLite em vez de Postgres.** O desenho original do projeto previa
-  Postgres com schema `fonte/produto/preco_historico/previsao`. Este
-  backend de desenvolvimento usa três bancos SQLite (`cache.db`,
-  `historico_local.db`, `alertas.db`) por simplicidade — adequado para
-  demonstração/apresentação, mas numa eventual entrega "de produção"
-  valeria migrar para Postgres com SQLAlchemy.
-- **Buscapé e Zoom dependem de uma estrutura interna não documentada**
-  (`__NEXT_DATA__` no HTML da página de busca). Se essas plataformas
-  mudarem o layout, essas duas fontes passam a retornar lista vazia
-  silenciosamente (o restante do pipeline continua funcionando com as
-  fontes que sobrarem — é um fail-open intencional, mas vale saber
-  que é o ponto mais provável de quebrar sem aviso).
-- **Rate limiting é em memória** (`Flask-Limiter` com `storage_uri="memory://"`).
-  Funciona bem para um processo único (como este projeto roda); se um
-  dia for servido com múltiplos processos/workers, os limites deixam
-  de ser compartilhados entre eles — trocar para Redis nesse caso.
-- **CORS aberto por padrão** (`CORS_ORIGINS=*`). Adequado para rodar
-  localmente; restrinja ao domínio real antes de expor publicamente.
-- **Tokens do Mercado Livre em texto simples** no `.env`. Aceitável
-  para um projeto acadêmico rodando localmente; não é o padrão
-  recomendado para produção (cofre de segredos, variáveis de ambiente
-  do provedor de hospedagem, etc.).
+- **Buscapé/Zoom** dependem de estrutura interna (`__NEXT_DATA__`). Se
+  mudarem o layout, retornam vazio (fail-open — outras fontes continuam).
+- **Rate limiting em memória.** Para múltiplos workers, migrar para Redis.
+- **CORS aberto** (`*`). Restringir ao domínio real em produção.
+- **Alertas client-side.** Usuário precisa ter o site aberto para verificar.
+  Backend tem CRUD pronto (`alertas_repository.py`) mas não está ativo —
+  planejado para versão futura com notificações push.
 
-## O que mudou em relação ao protótipo original
+## O que mudou do protótipo original
 
-Além da reorganização em módulos, esta versão corrigiu alguns
-problemas encontrados durante a revisão:
-
-- **Alertas de preço sem filtro nenhum.** `/api/alertas/verificar`
-  usava o primeiro resultado bruto da busca (sem checar relevância) —
-  um acessório barato e irrelevante podia disparar um alerta por
-  engano. Agora reusa o mesmo pipeline filtrado de `/api/buscar`.
-- **Busca no Mercado Livre exigia OAuth sem necessidade.** O endpoint
-  usado (`/sites/{site}/search`) é público; o código antigo lançava
-  erro se não houvesse `ML_ACCESS_TOKEN` configurado. Agora o token é
-  enviado só se existir.
-- **Falhas silenciosas.** Dezenas de `except Exception: pass/continue`
-  foram substituídos por `logger.warning`/`logger.exception`, sem
-  mudar o comportamento (a resposta ao usuário continua a mesma), mas
-  agora dá pra ver no console quando e por que uma fonte falhou.
-- **XSS no frontend.** Nome de produto (vindo de scraping de
-  terceiros) e o link do produto (usado dentro de um `onclick` inline
-  com o valor interpolado direto na string) eram injetados sem escape
-  no `innerHTML`. Adicionado um helper `escapeHtml()` e os cliques
-  passaram a ler de `data-*` + `addEventListener` em vez de HTML
-  inline.
-- **`.env` reescrito à mão.** A função que salvava o token do Mercado
-  Livre reabria e reescrevia o arquivo `.env` inteiro linha a linha;
-  trocada por `dotenv.set_key`, que edita só a chave necessária.
-- **Pipeline de busca duplicado 4 vezes.** `/api/buscar`,
-  `/api/comparar`, `/api/analise-ia` e a verificação de alertas
-  reimplementavam quase a mesma sequência "buscar → filtrar
-  relevância → (filtrar novos) → ranking". Unificado em
-  `aggregator.buscar_ofertas()`.
-# ia-precos-extensionista
+- Alertas sem filtro → agora usam pipeline filtrado de relevância
+- Mercado Livre removido (API instável)
+- XSS corrigido (escapeHtml + data-* attributes)
+- Pipeline de busca unificado em `aggregator.py`
+- Frontend migrado de HTMX para Vue 3 + Vue Router
+- Tema escuro/claro segue preferência do OS
+- Estilos nativos por plataforma (iOS/Android/macOS/Windows)
+- Busca paralela com ThreadPoolExecutor (~1.4s vs 10s)
+- Ranking com distribuição por fonte (não só preço)
+- CoinGecko como fallback quando Binance bloqueia (cloud IPs)
+- NVIDIA NIM como fallback direto quando OpenRouter falha
+- Deploy no Render com PostgreSQL gerenciado

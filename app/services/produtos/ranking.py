@@ -48,22 +48,51 @@ def relevancia_do_resultado(nome: str, termo: str) -> float:
 
 
 def ranking_relevancia(resultados: list, termo: str, limite: int = None) -> list:
-    """Ordena resultados por relevância ao termo (e depois por preço).
+    """Ordena resultados por relevância ao termo, distribuindo por fonte.
 
-    Prioriza o produto mais próximo do que foi digitado, não apenas o
-    mais barato. Ex.: buscar 'iphone 16 128gb' favorece o 'iPhone 16
-    128GB' sobre um 'iPhone 16 Pro Max 256GB' mais barato.
+    Garante representação mínima de cada fonte antes de preencher com
+    os melhores globais. Ex.: 5 resultados de 4 fontes → 1 de cada + 1 extra.
     """
     for r in resultados:
         r["_score"] = relevancia_do_resultado(r.get("nome", ""), termo)
 
-    resultados.sort(
-        key=lambda x: (x.get("preco") is None, -x.get("_score", 0), x.get("preco") or float("inf"))
+    # Ordena por score (desc) e preço (asc)
+    ordenados = sorted(
+        resultados,
+        key=lambda x: (x.get("preco") is None, -x.get("_score", 0), x.get("preco") or float("inf")),
     )
 
-    if limite:
-        resultados = resultados[:limite]
+    if not limite:
+        for r in ordenados:
+            r.pop("_score", None)
+        return ordenados
 
-    for r in resultados:
+    # Distribui por fonte: pega 1 de cada fonte, depois preenche
+    por_fonte = {}
+    for r in ordenados:
+        f = r.get("fonte", "Outra")
+        por_fonte.setdefault(f, []).append(r)
+
+    selecionados = []
+    fontes = list(por_fonte.keys())
+
+    # Rodada 1: melhor de cada fonte
+    for fonte in fontes:
+        if len(selecionados) < limite and por_fonte[fonte]:
+            selecionados.append(por_fonte[fonte].pop(0))
+
+    # Rodada 2: preenche com os melhores restantes
+    restantes = []
+    for fonte in fontes:
+        restantes.extend(por_fonte[fonte])
+    restantes.sort(key=lambda x: (x.get("preco") is None, -x.get("_score", 0), x.get("preco") or float("inf")))
+
+    for r in restantes:
+        if len(selecionados) >= limite:
+            break
+        selecionados.append(r)
+
+    # Limpa score temporário
+    for r in selecionados:
         r.pop("_score", None)
-    return resultados
+    return selecionados

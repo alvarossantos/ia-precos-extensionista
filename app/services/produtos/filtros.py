@@ -148,6 +148,7 @@ _TERMOS_ACESSORIO = (
     "controle ", "controlador ", "controller ", "joystick ", "gamepad ",
     "headset ", "fone ", "capa ", "case ", "skin ", "película ", "protetor ",
     "base de carregamento", "dock ", "carregador ", "charger ",
+    "fonte ", "fonte para",
     "cabo ", "suporte ", "stand ", "portal ",
     "capa ", "película ", "film ", "pouch ", "bumper",
     "powerbank", "power bank", "adaptador ", "hub ",

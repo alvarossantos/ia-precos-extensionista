@@ -22,12 +22,11 @@ def intervalo_por_periodo(periodo: int):
     """Mapeia período em dias para (intervalo, limite) da Binance."""
     if periodo in _PERIODO_INTERVALOS:
         return _PERIODO_INTERVALOS[periodo]
-    # Períodos não mapeados: usa 1d com limite proporcional (cap 365)
     return "1d", min(periodo, 365)
 
 
 def buscar_historico_cripto(symbol: str, limite: int = 100, intervalo: str = "1d"):
-    resp = http_client.get(
+    resp = http_client.binance_get(
         f"{config.BINANCE_BASE}/klines",
         params={"symbol": symbol, "interval": intervalo, "limit": limite},
     )
@@ -43,7 +42,7 @@ def buscar_historico_cripto(symbol: str, limite: int = 100, intervalo: str = "1d
 
 
 def buscar_preco_atual_cripto(symbol: str):
-    resp = http_client.get(f"{config.BINANCE_BASE}/ticker/24hr", params={"symbol": symbol})
+    resp = http_client.binance_get(f"{config.BINANCE_BASE}/ticker/24hr", params={"symbol": symbol})
     resp.raise_for_status()
     dados = resp.json()
     return float(dados["lastPrice"]), float(dados["priceChangePercent"])

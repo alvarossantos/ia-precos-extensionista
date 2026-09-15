@@ -54,8 +54,13 @@ class Config:
 
     # ---- OpenRouter (IA) ----
     OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-    OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openai/gpt-4o-mini")
+    OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openrouter/free")
     OPENROUTER_BASE = "https://openrouter.ai/api/v1/chat/completions"
+
+    # ---- NVIDIA NIM (IA fallback direto) ----
+    NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
+    NVIDIA_BASE = "https://integrate.api.nvidia.com/v1/chat/completions"
+    NVIDIA_MODEL = os.getenv("NVIDIA_MODEL", "nvidia/llama-3.3-70b-instruct")
 
 
 config = Config()

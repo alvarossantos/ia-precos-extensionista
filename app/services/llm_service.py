@@ -29,6 +29,9 @@ _FALLBACK_MODELOS = [
     "meta-llama/llama-3.1-8b-instruct",
     "google/gemini-flash-1.5",
     "mistralai/mistral-7b-instruct",
+    "nvidia/llama-3.1-nemotron-70b-instruct",
+    "nvidia/llama-3.1-nemotron-mini-4b-instruct",
+    "nvidia/llama-3.3-70b-instruct",
 ]
 
 _lock = threading.Lock()

@@ -101,7 +101,7 @@ def gerar_previsao(produto: str, tipo: str, historico, preco_atual: float,
                 raciocinio = (
                     f"Preço estável: R$ {menor:.2f} a R$ {maior:.2f} "
                     f"(variação de {diff_pct:.1f}% entre {len(historico)} buscas). "
-                    "O histórico ainda é curto —價值定期间会随着更多搜索而增长。"
+                    "O histórico ainda é curto — consulte novamente para evoluir a análise."
                 )
                 confianca = 45 + min(15, len(precos) * 3)
             elif variacao > 2:

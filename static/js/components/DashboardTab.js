@@ -153,31 +153,31 @@ const DashboardTab = {
               </div>
             </div>
 
-            <div class="row g-3 mb-3 stats-grid">
-              <div class="col-md-3">
-                <div class="glass-card p-3 text-center h-100">
-                  <small class="text-secondary d-block"><i class="fa-solid fa-arrow-down text-success me-1"></i>Menor Preço</small>
-                  <span class="fs-4 fw-bold text-success">{{ formatPrice(stats.menor_preco) }}</span>
-                  <small class="d-block text-secondary mt-1" style="font-size:0.7rem;">{{ historico?.menor_valor?.data || '--' }}</small>
+            <div class="row g-2 g-md-3 mb-3 stats-grid">
+              <div class="col-6 col-md-3">
+                <div class="glass-card text-center h-100">
+                  <span class="stat-label"><i class="fa-solid fa-arrow-down text-success me-1"></i>Menor Preço</span>
+                  <span class="stat-value text-success">{{ formatPrice(stats.menor_preco) }}</span>
+                  <span class="stat-sub">{{ historico?.menor_valor?.data || '--' }}</span>
                 </div>
               </div>
-              <div class="col-md-3">
-                <div class="glass-card p-3 text-center h-100">
-                  <small class="text-secondary d-block"><i class="fa-solid fa-arrow-up text-danger me-1"></i>Maior Preço</small>
-                  <span class="fs-4 fw-bold text-danger">{{ formatPrice(stats.maior_preco) }}</span>
-                  <small class="d-block text-secondary mt-1" style="font-size:0.7rem;">{{ historico?.maior_valor?.data || '--' }}</small>
+              <div class="col-6 col-md-3">
+                <div class="glass-card text-center h-100">
+                  <span class="stat-label"><i class="fa-solid fa-arrow-up text-danger me-1"></i>Maior Preço</span>
+                  <span class="stat-value text-danger">{{ formatPrice(stats.maior_preco) }}</span>
+                  <span class="stat-sub">{{ historico?.maior_valor?.data || '--' }}</span>
                 </div>
               </div>
-              <div class="col-md-3">
-                <div class="glass-card p-3 text-center h-100">
-                  <small class="text-secondary d-block"><i class="fa-solid fa-chart-column text-primary me-1"></i>Preço Médio</small>
-                  <span class="fs-4 fw-bold text-primary">{{ formatPrice(stats.preco_medio) }}</span>
+              <div class="col-6 col-md-3">
+                <div class="glass-card text-center h-100">
+                  <span class="stat-label"><i class="fa-solid fa-chart-column text-primary me-1"></i>Preço Médio</span>
+                  <span class="stat-value text-primary">{{ formatPrice(stats.preco_medio) }}</span>
                 </div>
               </div>
-              <div class="col-md-3">
-                <div class="glass-card p-3 text-center h-100">
-                  <small class="text-secondary d-block"><i class="fa-solid fa-box-open text-warning me-1"></i>Ofertas</small>
-                  <span class="fs-4 fw-bold text-warning">{{ ofertasCount }}</span>
+              <div class="col-6 col-md-3">
+                <div class="glass-card text-center h-100">
+                  <span class="stat-label"><i class="fa-solid fa-box-open text-warning me-1"></i>Ofertas</span>
+                  <span class="stat-value text-warning">{{ ofertasCount }}</span>
                 </div>
               </div>
             </div>

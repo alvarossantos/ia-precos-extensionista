@@ -31,7 +31,7 @@ def _criar_sessao() -> requests.Session:
     retries = Retry(
         total=config.HTTP_MAX_RETRIES,
         backoff_factor=0.5,
-        status_forcelist=(418, 429, 500, 502, 503, 504),
+        status_forcelist=(429, 500, 502, 503, 504),
         allowed_methods=("GET", "POST"),
         raise_on_status=False,
     )

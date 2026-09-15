@@ -30,6 +30,8 @@ def buscar_historico_cripto(symbol: str, limite: int = 100, intervalo: str = "1d
         f"{config.BINANCE_BASE}/klines",
         params={"symbol": symbol, "interval": intervalo, "limit": limite},
     )
+    if resp.status_code == 418:
+        raise ValueError("Binance bloqueou a requisição (anti-bot)")
     resp.raise_for_status()
     dados = resp.json()
     return [
@@ -43,6 +45,8 @@ def buscar_historico_cripto(symbol: str, limite: int = 100, intervalo: str = "1d
 
 def buscar_preco_atual_cripto(symbol: str):
     resp = http_client.binance_get(f"{config.BINANCE_BASE}/ticker/24hr", params={"symbol": symbol})
+    if resp.status_code == 418:
+        raise ValueError("Binance bloqueou a requisição (anti-bot)")
     resp.raise_for_status()
     dados = resp.json()
     return float(dados["lastPrice"]), float(dados["priceChangePercent"])

@@ -31,7 +31,7 @@ def historico():
         try:
             hist = cripto_service.buscar_historico_cripto(produto, limite=limite, intervalo=intervalo)
             preco_atual, variacao_24h = cripto_service.buscar_preco_atual_cripto(produto)
-        except requests.RequestException as e:
+        except (requests.RequestException, ValueError) as e:
             logger.warning("Falha ao consultar Binance para '%s': %s", produto, e)
             return jsonify({"erro": f"Falha ao consultar Binance: {e}"}), 502
 

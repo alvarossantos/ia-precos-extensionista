@@ -184,6 +184,13 @@ body {
     overflow: hidden;
 }
 
+/* Glass-card with padding — overflow control */
+.glass-card.p-3,
+.glass-card.p-4 {
+    overflow: hidden;
+    min-width: 0;
+}
+
 /* Stats grid inner cards — prevent overflow */
 .glass-card.p-3 {
     overflow: hidden;
@@ -443,7 +450,7 @@ select.form-select:focus {
 @media (max-width: 575.98px) {
     .glass-card { border-radius: 0.75rem; }
     .glass-card.p-4 { padding: 1rem !important; }
-    .glass-card.p-3 { padding: 0.75rem !important; }
+    .glass-card.p-3 { padding: 0.6rem !important; }
 
     /* Navbar compacta */
     .navbar .container { gap: 0.5rem; }
@@ -460,6 +467,24 @@ select.form-select:focus {
     /* Stats grid → 2 colunas */
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
 
+    .glass-card.p-3 .fs-4 {
+        font-size: 0.9rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .glass-card.p-3 .fs-5 {
+        font-size: 0.8rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .glass-card.p-3 small {
+        font-size: 0.65rem !important;
+    }
+
     /* Dashboard header: empilhar */
     .dashboard-header { flex-direction: column !important; gap: 0.5rem; }
     .dashboard-header h5 { font-size: 0.9rem; }
@@ -470,7 +495,7 @@ select.form-select:focus {
     /* Product cards: 1 coluna, thumbnail menor */
     .product-card .product-thumb { width: 48px; height: 48px; }
     .product-card { padding: 0.6rem; }
-    .product-card .product-price { font-size: 1rem; }
+    .product-card .product-price { font-size: 0.9rem; }
     .product-card h6 { font-size: 0.78rem; }
 
     /* Alert form inline: empilhar */
@@ -504,19 +529,57 @@ select.form-select:focus {
 /* SM: 576px - 767.98px (phones grandes) */
 @media (min-width: 576px) and (max-width: 767.98px) {
     .glass-card.p-4 { padding: 1.25rem !important; }
+    .glass-card.p-3 { padding: 0.75rem !important; }
 
     .display-4 { font-size: 2rem !important; }
 
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 
+    .glass-card.p-3 .fs-4 {
+        font-size: 1rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .glass-card.p-3 .fs-5 {
+        font-size: 0.9rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
     .product-card .product-thumb { width: 56px; height: 56px; }
+    .product-card .product-price { font-size: 1rem; }
 
     .chart-header { gap: 0.5rem; }
 }
 
 /* MD: 768px - 991.98px (tablets) */
 @media (min-width: 768px) and (max-width: 991.98px) {
+    .glass-card.p-4 { padding: 1.25rem !important; }
+    .glass-card.p-3 { padding: 0.75rem !important; }
+
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    .glass-card.p-3 .fs-4 {
+        font-size: 1rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .glass-card.p-3 .fs-5 {
+        font-size: 0.9rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .product-card .product-thumb { width: 56px; height: 56px; }
+    .product-card .product-price { font-size: 1rem; }
+
+    .chart-header { gap: 0.5rem; }
 }
 
 /* Chart responsivo */

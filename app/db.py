@@ -28,7 +28,6 @@ if _is_postgres():
 
     try:
         import psycopg
-        from psycopg.rows import dict_row
 
         def _get_pool():
             global _pool
@@ -38,7 +37,6 @@ if _is_postgres():
                     DATABASE_URL,
                     min_size=1,
                     max_size=5,
-                    kwargs={"row_factory": dict_row},
                 )
                 logger.info("Pool de conexões PostgreSQL criado (min=1, max=5)")
             return _pool

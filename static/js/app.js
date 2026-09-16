@@ -1,4 +1,10 @@
-/* Vue 3 app — Router + Root shell */
+/* app.js — Vue 3 app: Router + Root shell (ES module) */
+import { DashboardTab } from './components/DashboardTab.js';
+import { BuscarTab } from './components/BuscarTab.js';
+import { CompararTab } from './components/CompararTab.js';
+import { AlertasTab } from './components/AlertasTab.js';
+import { HistoricoTab } from './components/HistoricoTab.js';
+
 const { createApp } = Vue;
 const { createRouter, createWebHashHistory } = VueRouter;
 
@@ -100,12 +106,10 @@ const AppShell = {
       document.documentElement.setAttribute('data-bs-theme', saved);
       this.isDark = saved === 'dark';
     } else {
-      /* Seguir tema do sistema operacional */
       const mq = window.matchMedia('(prefers-color-scheme: light)');
       const sysTheme = mq.matches ? 'light' : 'dark';
       document.documentElement.setAttribute('data-bs-theme', sysTheme);
       this.isDark = sysTheme === 'dark';
-      /* Atualizar em tempo real se o usuário mudar o tema do OS */
       mq.addEventListener('change', (e) => {
         if (!localStorage.getItem('precocerto-theme')) {
           const t = e.matches ? 'light' : 'dark';
@@ -115,7 +119,6 @@ const AppShell = {
       });
     }
 
-    /* Detectar sistema operacional e aplicar classe no <html> */
     const ua = navigator.userAgent || '';
     let os = 'desktop';
     if (/iPhone|iPad|iPod/.test(ua)) os = 'ios';

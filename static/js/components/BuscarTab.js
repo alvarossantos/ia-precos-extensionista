@@ -1,5 +1,8 @@
 /* BuscarTab — Product search with stats + results grid + alert creation */
-const BuscarTab = {
+import { API_BASE, fetchJSON, formatPrice, AlertasAPI } from '../api.js';
+import { UserStore } from '../userStore.js';
+
+export const BuscarTab = {
   template: `
     <div class="glass-card p-4">
       <h5 class="fw-semibold mb-3 text-white">

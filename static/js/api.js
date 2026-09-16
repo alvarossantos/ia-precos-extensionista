@@ -1,7 +1,8 @@
-/* Shared API helpers — used by all Vue components */
-const API_BASE = `${window.location.origin}/api`;
+/* api.js — Shared API helpers (ES module) */
 
-const fetchJSON = async (url, options = {}) => {
+export const API_BASE = `${window.location.origin}/api`;
+
+export const fetchJSON = async (url, options = {}) => {
   try {
     const r = await fetch(url, {
       headers: { 'Content-Type': 'application/json', ...options.headers },
@@ -18,24 +19,24 @@ const fetchJSON = async (url, options = {}) => {
   }
 };
 
-const formatPrice = (price) => {
+export const formatPrice = (price) => {
   if (price == null) return '--';
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
 };
 
-const formatDate = (dateStr) => {
+export const formatDate = (dateStr) => {
   if (!dateStr) return '--';
   const d = new Date(dateStr);
   return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 };
 
-const escapeHtml = (v) => {
+export const escapeHtml = (v) => {
   if (v == null) return '';
   return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 };
 
 /* ── Alertas API ─────────────────────────────────────── */
-const AlertasAPI = {
+export const AlertasAPI = {
   async listar() {
     const data = await fetchJSON(`${API_BASE}/alertas`);
     return data?.alertas || [];

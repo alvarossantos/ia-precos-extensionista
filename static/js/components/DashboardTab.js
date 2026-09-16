@@ -1,5 +1,8 @@
 /* DashboardTab — Cripto/Produto dashboard with Chart.js + AI prediction */
-const DashboardTab = {
+import { API_BASE, fetchJSON, formatPrice } from '../api.js';
+import { UserStore } from '../userStore.js';
+
+export const DashboardTab = {
   template: `
     <div>
       <div class="row g-4 mb-4">

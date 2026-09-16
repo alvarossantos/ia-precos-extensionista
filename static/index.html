@@ -19,20 +19,10 @@
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Vue 3 + Vue Router (dev build — full template compiler) -->
+    <!-- Vue 3 + Vue Router (global builds — exposed as window.Vue / window.VueRouter) -->
     <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.js"></script>
     <script src="https://unpkg.com/vue-router@4.5.0/dist/vue-router.global.js"></script>
-    <!-- API helpers (must load before components) -->
-    <script src="js/api.js"></script>
-    <!-- User data store (localStorage) -->
-    <script src="js/userStore.js"></script>
-    <!-- Components -->
-    <script src="js/components/DashboardTab.js"></script>
-    <script src="js/components/BuscarTab.js"></script>
-    <script src="js/components/CompararTab.js"></script>
-    <script src="js/components/AlertasTab.js"></script>
-    <script src="js/components/HistoricoTab.js"></script>
-    <!-- App (router + mount) -->
-    <script src="js/app.js"></script>
+    <!-- App entry point (ES module — imports all components, api, userStore) -->
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>

@@ -1,5 +1,7 @@
 /* AlertasTab — CRUD de alertas de preço (banco de dados via API) */
-const AlertasTab = {
+import { formatPrice, AlertasAPI } from '../api.js';
+
+export const AlertasTab = {
   template: `
     <div class="glass-card p-4">
       <h5 class="fw-semibold mb-3 text-white">

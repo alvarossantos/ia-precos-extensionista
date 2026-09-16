@@ -1,37 +1,33 @@
-/* userStore.js — Dados do usuário em localStorage.
- *
- * O backend só guarda preços/cache (admin).
- * Alertas, histórico e buscas ficam no navegador do usuário.
- */
-const UserStore = {
-  KEYS: {
-    alertas: 'precocerto-alertas',
-    historico: 'precocerto-historico',
-  },
+/* userStore.js — Dados do usuário em localStorage (ES module) */
 
-  /* ── Helpers ─────────────────────────────────────── */
-  _get(key) {
-    try { return JSON.parse(localStorage.getItem(key)) || []; }
-    catch { return []; }
-  },
+const _keys = {
+  alertas: 'precocerto-alertas',
+  historico: 'precocerto-historico',
+};
 
-  _set(key, data) {
-    localStorage.setItem(key, JSON.stringify(data));
-  },
+function _get(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || []; }
+  catch { return []; }
+}
 
-  _uuid() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-  },
+function _set(key, data) {
+  localStorage.setItem(key, JSON.stringify(data));
+}
 
+function _uuid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+export const UserStore = {
   /* ── Alertas ─────────────────────────────────────── */
   listarAlertas() {
-    return this._get(this.KEYS.alertas);
+    return _get(_keys.alertas);
   },
 
   criarAlerta(produto, preco_alvo, condicao = 'menor') {
     const alertas = this.listarAlertas();
     const alerta = {
-      id: this._uuid(),
+      id: _uuid(),
       produto,
       preco_alvo: parseFloat(preco_alvo),
       condicao,
@@ -39,24 +35,23 @@ const UserStore = {
       criado_em: new Date().toISOString(),
     };
     alertas.unshift(alerta);
-    this._set(this.KEYS.alertas, alertas);
+    _set(_keys.alertas, alertas);
     return alerta;
   },
 
   removerAlerta(id) {
     const alertas = this.listarAlertas().filter(a => a.id !== id);
-    this._set(this.KEYS.alertas, alertas);
+    _set(_keys.alertas, alertas);
   },
 
   /* ── Histórico de Buscas ─────────────────────────── */
   listarHistorico() {
-    return this._get(this.KEYS.historico);
+    return _get(_keys.historico);
   },
 
   salvarBusca(produto) {
     if (!produto || !produto.trim()) return;
     const historico = this.listarHistorico();
-    // Remove duplicata recente (mesma busca em < 5 min)
     const agora = Date.now();
     const filtrado = historico.filter(h => {
       if (h.produto.toLowerCase() !== produto.trim().toLowerCase()) return true;
@@ -66,11 +61,10 @@ const UserStore = {
       produto: produto.trim(),
       data: new Date().toISOString(),
     });
-    // Mantém últimas 50 buscas
-    this._set(this.KEYS.historico, filtrado.slice(0, 50));
+    _set(_keys.historico, filtrado.slice(0, 50));
   },
 
   limparHistorico() {
-    this._set(this.KEYS.historico, []);
+    _set(_keys.historico, []);
   },
 };

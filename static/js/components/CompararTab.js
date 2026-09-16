@@ -1,5 +1,7 @@
 /* CompararTab — Compare products side by side */
-const CompararTab = {
+import { API_BASE, fetchJSON, formatPrice } from '../api.js';
+
+export const CompararTab = {
   template: `
     <div class="glass-card p-4">
       <h5 class="fw-semibold mb-3 text-white">

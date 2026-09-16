@@ -1,5 +1,7 @@
 /* HistoricoTab — Search history (localStorage) */
-const HistoricoTab = {
+import { UserStore } from '../userStore.js';
+
+export const HistoricoTab = {
   template: `
     <div class="glass-card p-4">
       <h5 class="fw-semibold mb-3 text-white">

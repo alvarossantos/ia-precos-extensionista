@@ -46,15 +46,13 @@ if _is_postgres():
         @contextmanager
         def conexao(db_path: str = None):
             pool = _get_pool()
-            conn = pool.connection()
-            try:
-                yield conn
-                conn.commit()
-            except Exception:
-                conn.rollback()
-                raise
-            finally:
-                conn.close()
+            with pool.connection() as conn:
+                try:
+                    yield conn
+                    conn.commit()
+                except Exception:
+                    conn.rollback()
+                    raise
 
         def criar_tabelas():
             try:

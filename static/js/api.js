@@ -1,9 +1,12 @@
 /* Shared API helpers — used by all Vue components */
 const API_BASE = `${window.location.origin}/api`;
 
-const fetchJSON = async (url) => {
+const fetchJSON = async (url, options = {}) => {
   try {
-    const r = await fetch(url);
+    const r = await fetch(url, {
+      headers: { 'Content-Type': 'application/json', ...options.headers },
+      ...options,
+    });
     if (!r.ok) {
       console.warn('[API]', r.status, r.statusText, url);
       return null;
@@ -29,4 +32,32 @@ const formatDate = (dateStr) => {
 const escapeHtml = (v) => {
   if (v == null) return '';
   return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+};
+
+/* ── Alertas API ─────────────────────────────────────── */
+const AlertasAPI = {
+  async listar() {
+    const data = await fetchJSON(`${API_BASE}/alertas`);
+    return data?.alertas || [];
+  },
+
+  async criar(produto, preco_alvo, condicao = 'menor') {
+    const data = await fetchJSON(`${API_BASE}/alertas`, {
+      method: 'POST',
+      body: JSON.stringify({ produto, preco_alvo, condicao }),
+    });
+    return data?.alerta || null;
+  },
+
+  async remover(id) {
+    return await fetchJSON(`${API_BASE}/alertas/${id}`, { method: 'DELETE' });
+  },
+
+  async toggle(id) {
+    return await fetchJSON(`${API_BASE}/alertas/${id}/toggle`, { method: 'POST' });
+  },
+
+  async verificar() {
+    return await fetchJSON(`${API_BASE}/alertas/verificar`);
+  },
 };

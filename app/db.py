@@ -1,7 +1,8 @@
 """Helper de conexão com banco de dados.
 
 Suporta PostgreSQL (via DATABASE_URL, para Render) e SQLite (local).
-Em produção (Render), usa psycopg (v3). Em desenvolvimento, usa SQLite com WAL.
+Em produção (Render), usa psycopg (v3) com pool de conexões.
+Em desenvolvimento, usa SQLite com WAL.
 """
 
 import logging
@@ -12,6 +13,8 @@ from contextlib import contextmanager
 logger = logging.getLogger(__name__)
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
+
+_pool = None
 
 
 def _is_postgres() -> bool:
@@ -25,10 +28,25 @@ if _is_postgres():
 
     try:
         import psycopg
+        from psycopg.rows import dict_row
+
+        def _get_pool():
+            global _pool
+            if _pool is None:
+                from psycopg_pool import ConnectionPool
+                _pool = ConnectionPool(
+                    DATABASE_URL,
+                    min_size=1,
+                    max_size=5,
+                    kwargs={"row_factory": dict_row},
+                )
+                logger.info("Pool de conexões PostgreSQL criado (min=1, max=5)")
+            return _pool
 
         @contextmanager
         def conexao(db_path: str = None):
-            conn = psycopg.connect(DATABASE_URL)
+            pool = _get_pool()
+            conn = pool.connection()
             try:
                 yield conn
                 conn.commit()

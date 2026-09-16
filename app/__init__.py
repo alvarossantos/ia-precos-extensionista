@@ -8,6 +8,7 @@ instância do app com config diferente para os testes) e mistura
 """
 
 import logging
+import os
 
 from flask import Flask
 from flask_cors import CORS
@@ -38,6 +39,10 @@ def create_app() -> Flask:
         logger.error("Falha ao criar tabelas: %s", e)
 
     registrar_rotas(app)
+
+    # Iniciar scheduler de alertas (apenas em produção ou com --preload)
+    from .scheduler import iniciar_scheduler
+    iniciar_scheduler(intervalo_minutos=15)
 
     logger.info("Aplicação criada (debug=%s, cors_origins=%s, db=%s)",
                 config.DEBUG, origins, "PG" if _is_postgres() else "SQLite")

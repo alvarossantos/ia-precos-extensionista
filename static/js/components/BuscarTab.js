@@ -192,9 +192,13 @@ const BuscarTab = {
       this.alertaFeedback = null;
 
       try {
-        UserStore.criarAlerta(this.alertaForm.produto, this.alertaForm.preco_alvo, this.alertaForm.condicao);
-        this.alertaFeedback = { ok: true, msg: 'Alerta criado!' };
-        setTimeout(() => { this.alertaAberto = null; this.alertaFeedback = null; }, 1500);
+        const alerta = await AlertasAPI.criar(this.alertaForm.produto, this.alertaForm.preco_alvo, this.alertaForm.condicao);
+        if (alerta) {
+          this.alertaFeedback = { ok: true, msg: 'Alerta criado!' };
+          setTimeout(() => { this.alertaAberto = null; this.alertaFeedback = null; }, 1500);
+        } else {
+          this.alertaFeedback = { ok: false, msg: 'Falha ao salvar alerta.' };
+        }
       } catch (e) {
         this.alertaFeedback = { ok: false, msg: 'Falha ao salvar alerta.' };
       }

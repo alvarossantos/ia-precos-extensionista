@@ -1,4 +1,4 @@
-/* AlertasTab — CRUD de alertas de preço (localStorage + verificação client-side) */
+/* AlertasTab — CRUD de alertas de preço (banco de dados via API) */
 const AlertasTab = {
   template: `
     <div class="glass-card p-4">
@@ -38,13 +38,14 @@ const AlertasTab = {
         </form>
       </div>
 
-      <!-- Alertas Ativados -->
-      <div v-if="atingidos.length" class="alert alert-success bg-success bg-opacity-10 border-success mb-4">
-        <h6 class="alert-heading"><i class="fa-solid fa-bell-ring me-1"></i> Alertas Ativados</h6>
-        <div v-for="a in atingidos" :key="a.id" class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2 alert-ativado-item">
+      <!-- Alertas Disparados (verificação server-side) -->
+      <div v-if="disparados.length" class="alert alert-success bg-success bg-opacity-10 border-success mb-4">
+        <h6 class="alert-heading"><i class="fa-solid fa-bell-ring me-1"></i> Alertas Disparados</h6>
+        <div v-for="d in disparados" :key="d.id" class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2 alert-ativado-item">
           <span>
-            <strong>{{ a.produto }}</strong> — Preço atual: <span class="text-success fw-bold">{{ formatPrice(a.preco_atual) }}</span>
-            ({{ a.condicao === 'menor' ? '<' : '>' }} {{ formatPrice(a.preco_alvo) }})
+            <strong>{{ d.produto }}</strong> — Preço atual: <span class="text-success fw-bold">{{ formatPrice(d.preco_atual) }}</span>
+            ({{ d.condicao === 'menor' ? '<' : '>' }} {{ formatPrice(d.preco_alvo) }})
+            <span class="text-secondary ms-1">via {{ d.fonte }}</span>
           </span>
           <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Ativado</span>
         </div>
@@ -64,10 +65,17 @@ const AlertasTab = {
             <span class="text-secondary ms-2">
               {{ a.condicao === 'menor' ? '<' : '>' }} {{ formatPrice(a.preco_alvo) }}
             </span>
+            <span v-if="!a.ativo" class="badge bg-secondary ms-2">Pausado</span>
           </div>
-          <button class="btn btn-sm btn-outline-danger" @click="deletar(a.id)" :disabled="deletando === a.id">
-            <i class="fa-solid fa-trash"></i>
-          </button>
+          <div class="d-flex gap-1">
+            <button class="btn btn-sm btn-outline-warning" @click="toggleAlerta(a.id)" :disabled="processando === a.id"
+                    :title="a.ativo ? 'Pausar' : 'Ativar'">
+              <i :class="a.ativo ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" @click="deletar(a.id)" :disabled="processando === a.id">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
         </div>
       </div>
       <div v-else-if="!loading" class="text-center text-secondary py-4">
@@ -80,78 +88,59 @@ const AlertasTab = {
   data() {
     return {
       alertas: [],
-      atingidos: [],
+      disparados: [],
       novo: { produto: '', preco_alvo: null, condicao: 'menor' },
       loading: false,
       verificando: false,
       criando: false,
-      deletando: null,
+      processando: null,
     };
   },
 
   methods: {
-    carregar() {
+    async carregar() {
       this.loading = true;
-      this.alertas = UserStore.listarAlertas();
+      this.alertas = await AlertasAPI.listar();
       this.loading = false;
     },
 
-    criar() {
+    async criar() {
       if (!this.novo.produto || !this.novo.preco_alvo) return;
       this.criando = true;
-      UserStore.criarAlerta(this.novo.produto, this.novo.preco_alvo, this.novo.condicao);
+      await AlertasAPI.criar(this.novo.produto, this.novo.preco_alvo, this.novo.condicao);
       this.novo = { produto: '', preco_alvo: null, condicao: 'menor' };
       this.criando = false;
-      this.carregar();
+      await this.carregar();
     },
 
-    deletar(id) {
-      this.deletando = id;
-      UserStore.removerAlerta(id);
-      this.deletando = null;
-      this.carregar();
+    async deletar(id) {
+      this.processando = id;
+      await AlertasAPI.remover(id);
+      this.processando = null;
+      await this.carregar();
+    },
+
+    async toggleAlerta(id) {
+      this.processando = id;
+      await AlertasAPI.toggle(id);
+      this.processando = null;
+      await this.carregar();
     },
 
     async verificarAlertas() {
-      const ativos = this.alertas.filter(a => a.ativo);
-      if (!ativos.length) { this.atingidos = []; return; }
+      if (!this.alertas.length) { this.disparados = []; return; }
 
       this.verificando = true;
-      this.atingidos = [];
-
-      for (const alerta of ativos) {
-        try {
-          const data = await fetchJSON(
-            `${API_BASE}/buscar?produto=${encodeURIComponent(alerta.produto)}&limite=1`
-          );
-          const resultado = data?.resultados?.[0];
-          if (!resultado || resultado.preco == null) continue;
-
-          const precoAtual = resultado.preco;
-          const disparou =
-            (alerta.condicao === 'menor' && precoAtual <= alerta.preco_alvo) ||
-            (alerta.condicao === 'maior' && precoAtual >= alerta.preco_alvo);
-
-          if (disparou) {
-            this.atingidos.push({
-              ...alerta,
-              preco_atual: precoAtual,
-              fonte: resultado.fonte || '',
-            });
-          }
-        } catch (e) {
-          console.warn('[Alertas] Falha ao verificar:', alerta.produto, e);
-        }
-      }
-
+      const data = await AlertasAPI.verificar();
+      this.disparados = data?.disparados || [];
       this.verificando = false;
     },
 
     formatPrice,
   },
 
-  mounted() {
-    this.carregar();
-    this.verificarAlertas();
+  async mounted() {
+    await this.carregar();
+    await this.verificarAlertas();
   },
 };

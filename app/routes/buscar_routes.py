@@ -19,14 +19,12 @@ def buscar():
     limite = min(int_param(request, "limite", 5), 50)
     fontes_raw = request.args.get("fontes", ",".join(FONTES_PADRAO))
     fontes_selecionadas = [f.strip() for f in fontes_raw.split(",") if f.strip()]
-    so_novos = request.args.get("so_novos", "").lower() in ("1", "true", "sim", "novos")
 
     if not produto:
         return jsonify({"erro": "parâmetro 'produto' é obrigatório"}), 400
 
     try:
-        resultados = buscar_ofertas(produto, limite=limite, fontes_selecionadas=fontes_selecionadas,
-                                     so_novos=so_novos)
+        resultados = buscar_ofertas(produto, limite=limite, fontes_selecionadas=fontes_selecionadas)
     except Exception as e:
         logger.exception("Falha ao buscar '%s'", produto)
         return jsonify({"erro": f"Falha ao buscar: {e}"}), 502

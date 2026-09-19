@@ -81,7 +81,8 @@ class AlertasRepository:
         with conexao(self.db_path) as conn:
             cursor = conn.execute(
                 f"INSERT INTO alertas (produto, preco_alvo, condicao, ativo, criado_em) "
-                f"VALUES ({PH}, {PH}, {PH}, 1, {PH})",
+                f"VALUES ({PH}, {PH}, {PH}, 1, {PH})"
+                + (" RETURNING id" if _is_postgres() else ""),
                 (produto, preco_alvo, condicao, datetime.now().isoformat()),
             )
             if _is_postgres():

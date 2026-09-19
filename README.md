@@ -118,9 +118,8 @@ Veja `.env.example` para a lista completa.
   mudarem o layout, retornam vazio (fail-open — outras fontes continuam).
 - **Rate limiting em memória.** Para múltiplos workers, migrar para Redis.
 - **CORS aberto** (`*`). Restringir ao domínio real em produção.
-- **Alertas client-side.** Usuário precisa ter o site aberto para verificar.
-  Backend tem CRUD pronto (`alertas_repository.py`) mas não está ativo —
-  planejado para versão futura com notificações push.
+- **Buscapé/Zoom bloqueados em cloud.** IPs de datacenter recebem 403.
+  Outras fontes continuam funcionando (fail-open).
 
 ## O que mudou do protótipo original
 

@@ -278,8 +278,6 @@ def _url_tem_conteudo(url: str) -> bool:
             return False
         return True
     except Exception:
-        return True
-    except Exception:
         # Qualquer erro (timeout, connection, etc) → mantém (fail-open)
         return True
 

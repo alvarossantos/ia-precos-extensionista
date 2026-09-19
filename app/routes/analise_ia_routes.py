@@ -19,13 +19,12 @@ def analise_ia():
     montar um dashboard inteligente: melhor compra, faixa de preço e conselho."""
     produto = request.args.get("produto", "").strip()
     limite = min(int_param(request, "limite", 5), 20)
-    so_novos = request.args.get("so_novos", "").lower() in ("1", "true", "sim", "novos")
 
     if not produto:
         return jsonify({"erro": "parâmetro 'produto' é obrigatório"}), 400
 
     try:
-        resultados = buscar_ofertas(produto, limite=limite, so_novos=so_novos)
+        resultados = buscar_ofertas(produto, limite=limite)
     except Exception as e:
         logger.warning("Falha ao coletar preços para análise de IA de '%s': %s", produto, e)
         resultados = []
